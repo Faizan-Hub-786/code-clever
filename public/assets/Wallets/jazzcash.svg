@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <circle cx="50" cy="50" r="48" fill="#0c081a" stroke="#2e1948" stroke-width="2" />
+  <g transform="translate(18, 14) scale(0.65)">
+    <!-- Yellow Crescent -->
+    <path d="M 50 0 C 72 0 90 18 90 40 C 90 62 72 80 50 80 C 44 80 38 78 33 76 C 52 70 66 53 66 33 C 66 18 58 6 46 0 C 47.3 0 48.6 0 50 0 Z" fill="#ffcc00" />
+    <!-- Red Crescent Accent -->
+    <path d="M 50 80 C 65 77 76 66 76 52 C 76 43 71 36 64 32 C 65 38 65 44 63 50 C 58 64 47 75 33 76 C 38 78 44 80 50 80 Z" fill="#e60000" />
+    <!-- JazzCash text -->
+    <text x="50" y="102" text-anchor="middle" font-family="'Inter', 'Arial Black', sans-serif" font-weight="900" font-size="21" fill="#ffffff" letter-spacing="-0.5">Jazz<tspan fill="#ffcc00">Cash</tspan></text>
+  </g>
+</svg>

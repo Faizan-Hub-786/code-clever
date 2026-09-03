@@ -1,0 +1,82 @@
+{
+  "name": "CODE CLEVER",
+  "short_name": "CODE CLEVER",
+  "description": "CODE CLEVER — Smart Earning & Task Center",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#05030D",
+  "theme_color": "#6D28D9",
+  "categories": [
+    "finance",
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/code-clever-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/code-clever-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/code-clever-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/code-clever-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/code-clever-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/code-clever-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily Tasks",
+      "short_name": "Tasks",
+      "description": "Open Daily Tasks",
+      "url": "/tasks",
+      "icons": [{ "src": "/icons/code-clever-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Wallet",
+      "short_name": "Wallet",
+      "description": "View Balance & Earnings",
+      "url": "/wallet",
+      "icons": [{ "src": "/icons/code-clever-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Team Hub",
+      "short_name": "Team",
+      "description": "View Referral Hierarchy",
+      "url": "/team",
+      "icons": [{ "src": "/icons/code-clever-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

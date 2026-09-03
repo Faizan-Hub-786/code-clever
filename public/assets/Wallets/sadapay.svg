@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <circle cx="50" cy="50" r="48" fill="#0c081a" stroke="#2e1948" stroke-width="2" />
+  <g transform="translate(18, 18) scale(0.64)">
+    <!-- Teal Ribbon (Top-Left) -->
+    <path d="M 50 8 C 44 18 36 28 26 28 C 14 28 6 36 6 48 C 6 60 15 68 28 68 L 44 68 C 50 68 56 62 56 56 C 56 50 50 44 44 44 L 34 44 C 28 44 24 40 24 34 C 24 28 28 24 34 24 C 40 24 46 16 50 8 Z" fill="url(#tealGrad)" />
+    <!-- Salmon / Coral Ribbon (Bottom-Right) -->
+    <path d="M 50 92 C 56 82 64 72 74 72 C 86 72 94 64 94 52 C 94 40 85 32 72 32 L 56 32 C 50 32 44 38 44 44 C 44 50 50 56 56 56 L 66 56 C 72 56 76 60 76 66 C 76 72 72 76 66 76 C 60 76 54 84 50 92 Z" fill="url(#coralGrad)" />
+  </g>
+  <defs>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4eecd8" />
+      <stop offset="100%" stop-color="#14a39b" />
+    </linearGradient>
+    <linearGradient id="coralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8e53" />
+      <stop offset="100%" stop-color="#ff4b3e" />
+    </linearGradient>
+  </defs>
+</svg>
