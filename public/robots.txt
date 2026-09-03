@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /admin
 
-Sitemap: https://codeclever.space/sitemap.xml
+Sitemap: https://code-clever.space/sitemap.xml

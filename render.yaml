@@ -28,9 +28,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: "https://codeclever.com"
+        value: "https://code-clever.space,https://www.code-clever.space"
       - key: FRONTEND_URL
-        value: "https://codeclever.com"
+        value: "https://code-clever.space"
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
