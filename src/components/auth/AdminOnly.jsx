@@ -17,7 +17,7 @@ import { API_BASE_URL } from '../../api/config';
 
 export default function AdminOnly({ children }) {
   const nav = useNavigate();
-  const [email, setEmail] = useState('faizan0687@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,7 +32,7 @@ export default function AdminOnly({ children }) {
     try {
       const u = JSON.parse(raw);
       return (
-        String(u?.email || '').trim().toLowerCase() === 'faizan0687@gmail.com' &&
+        String(u?.email || '').trim().toLowerCase() === 'faizanbarvi786@gmail.com' &&
         u?.role === 'admin'
       );
     } catch {
@@ -52,8 +52,8 @@ export default function AdminOnly({ children }) {
     setSuccessMsg('');
 
     const cleanEmail = String(email || '').trim().toLowerCase();
-    if (cleanEmail !== 'faizan0687@gmail.com') {
-      setError('Access Denied: Only the authorized administrator account (faizan0687@gmail.com) can access this portal.');
+    if (!cleanEmail) {
+      setError('Please enter your administrator email.');
       return;
     }
 
@@ -152,7 +152,7 @@ export default function AdminOnly({ children }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="faizan0687@gmail.com"
+                placeholder="Enter administrator email"
                 required
                 disabled={loading}
               />

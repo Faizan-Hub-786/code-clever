@@ -300,7 +300,7 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
             </h3>
             <p style={{ margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 }}>
               Purges all registered member accounts, deposits, withdrawals, wallet transactions, task assignments, referral downlines, and support tickets.
-              The <b>Master Admin account (<code style={{ color: '#facc15' }}>faizan0687@gmail.com</code>)</b>, default earning plans (C1–C9), task library, and site settings are <b>permanently preserved</b>.
+              The <b>Master Admin account (<code style={{ color: '#facc15' }}>faizanbarvi786@gmail.com</code>)</b>, default earning plans (C1–C9), task library, and site settings are <b>permanently preserved</b>.
             </p>
           </div>
 
@@ -360,7 +360,7 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
                 <li>All deposits, withdrawals, and ledger transactions will be wiped.</li>
                 <li>All referral hierarchy trees and commissions will be cleared.</li>
                 <li>All daily check-ins, tasks, and wheel spins will be reset.</li>
-                <li><b style={{ color: '#4ade80' }}>Master Admin (faizan0687@gmail.com) is 100% safe & preserved.</b></li>
+                <li><b style={{ color: '#4ade80' }}>Master Admin (faizanbarvi786@gmail.com) is 100% safe & preserved.</b></li>
               </ul>
             </div>
 

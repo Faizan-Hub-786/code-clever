@@ -286,7 +286,7 @@ export default function AdminUsers({ users = [], onAction }) {
                     >
                       {u.status === 'active' ? 'Suspend' : 'Activate'}
                     </button>
-                    {u.role !== 'admin' && String(u.email || '').toLowerCase() !== 'faizan0687@gmail.com' && (
+                    {u.role !== 'admin' && String(u.email || '').toLowerCase() !== 'faizanbarvi786@gmail.com' && (
                       <button
                         className="reject-btn"
                         style={{
@@ -485,7 +485,7 @@ export default function AdminUsers({ users = [], onAction }) {
                   {detail.user.status === 'active' ? 'Suspend Account' : 'Activate Account'}
                 </button>
 
-                {detail.user.role !== 'admin' && String(detail.user.email || '').toLowerCase() !== 'faizan0687@gmail.com' && (
+                {detail.user.role !== 'admin' && String(detail.user.email || '').toLowerCase() !== 'faizanbarvi786@gmail.com' && (
                   <button
                     type="button"
                     className="reject-btn"

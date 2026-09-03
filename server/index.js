@@ -141,8 +141,8 @@ function auth(req, res, next) {
 async function adminOnly(req, res, next) {
   try {
     const [[u]] = await pool.execute(`SELECT id, full_name, email, role, status FROM users WHERE id=?`, [req.user.id]);
-    if (!u || u.status !== 'active' || u.role !== 'admin' || String(u.email || '').trim().toLowerCase() !== 'faizan0687@gmail.com') {
-      return res.status(403).json({ message: 'Access denied: Only authorized administrator faizan0687@gmail.com is permitted.' });
+    if (!u || u.status !== 'active' || u.role !== 'admin' || String(u.email || '').trim().toLowerCase() !== 'faizanbarvi786@gmail.com') {
+      return res.status(403).json({ message: 'Access denied: Administrator privileges required.' });
     }
     req.admin = u;
     next();
@@ -420,8 +420,8 @@ async function initDatabase() {
     // Ensure app_icon in task_library is LONGTEXT
     await pool.execute(`ALTER TABLE task_library MODIFY COLUMN app_icon LONGTEXT NULL`).catch(() => {});
 
-    // Ensure Master Administrator user account (faizan0687@gmail.com / Faizan@0687)
-    const adminEmail = 'faizan0687@gmail.com';
+    // Ensure Master Administrator user account (faizanbarvi786@gmail.com / Faizan@0687)
+    const adminEmail = 'faizanbarvi786@gmail.com';
     const adminPass = 'Faizan@0687';
     const adminHash = await bcrypt.hash(adminPass, 10);
     
@@ -1089,8 +1089,8 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password. Please try again.' });
     }
 
-    // If maintenance mode is active, only master admin faizan0687@gmail.com can log in!
-    if (isMaintenance && u.role !== 'admin' && cleanEmail !== 'faizan0687@gmail.com') {
+    // If maintenance mode is active, only master admin faizanbarvi786@gmail.com can log in!
+    if (isMaintenance && u.role !== 'admin' && cleanEmail !== 'faizanbarvi786@gmail.com') {
       return res.status(503).json({
         maintenance: true,
         message: 'Code Clever is currently under scheduled maintenance and system upgrades. Public member access is temporarily paused. Please check back shortly.'
@@ -1119,8 +1119,8 @@ app.post('/api/auth/admin-login', async (req, res) => {
     const cleanEmail = String(email || '').trim().toLowerCase();
 
     // Verify authorized master admin email address
-    if (cleanEmail !== 'faizan0687@gmail.com') {
-      return res.status(403).json({ message: 'Access Denied: Only the authorized platform administrator faizan0687@gmail.com is permitted.' });
+    if (cleanEmail !== 'faizanbarvi786@gmail.com') {
+      return res.status(403).json({ message: 'Access Denied: Invalid administrator credentials.' });
     }
 
     const [rows] = await pool.execute(
@@ -1129,7 +1129,7 @@ app.post('/api/auth/admin-login', async (req, res) => {
     );
     const u = rows[0];
     if (!u || !(await bcrypt.compare(password || '', u.password_hash))) {
-      return res.status(401).json({ message: 'Invalid admin credentials. Please enter the correct password for faizan0687@gmail.com.' });
+      return res.status(401).json({ message: 'Invalid admin credentials. Please enter the correct password.' });
     }
 
     if (u.status !== 'active') {
@@ -2119,7 +2119,7 @@ app.get('/api/team', auth, async (req, res) => {
     const requireActivePlanToRefer = settingRow ? (settingRow.value_json === 'true' || settingRow.value_json === true) : true;
     
     // Master admin always has referral sharing enabled
-    const isMasterAdmin = (user.role === 'admin' || req.user.role === 'admin' || String(user.email || '').toLowerCase() === 'faizan0687@gmail.com');
+    const isMasterAdmin = (user.role === 'admin' || req.user.role === 'admin' || String(user.email || '').toLowerCase() === 'faizanbarvi786@gmail.com');
     const canShareReferral = isMasterAdmin || !requireActivePlanToRefer || Boolean(hasActivePaidPlan);
 
     let activeRefCode = user.referral_code;
@@ -3323,7 +3323,7 @@ app.post('/api/admin/system/reset-all-data-except-admin', auth, adminOnly, async
 
     // 3. Delete all non-admin users
     const [delUsers] = await conn.query(
-      `DELETE FROM users WHERE id != ? AND role != 'admin' AND email != 'faizan0687@gmail.com'`,
+      `DELETE FROM users WHERE id != ? AND role != 'admin' AND email != 'faizanbarvi786@gmail.com'`,
       [req.user.id]
     );
 
@@ -4079,7 +4079,7 @@ const deleteAndBlacklistUserHandler = async (req, res) => {
       await conn.rollback();
       return res.status(404).json({ message: 'User not found.' });
     }
-    if (targetUser.role === 'admin' || String(targetUser.email || '').toLowerCase() === 'faizan0687@gmail.com') {
+    if (targetUser.role === 'admin' || String(targetUser.email || '').toLowerCase() === 'faizanbarvi786@gmail.com') {
       await conn.rollback();
       return res.status(403).json({ message: 'Master Administrator account cannot be deleted.' });
     }
