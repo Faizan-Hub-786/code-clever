@@ -4,8 +4,8 @@ import { API_BASE_URL, getAuthHeaders } from '../../api/config';
 import { fmt } from '../../utils/formatters';
 
 export default function AdminWithdrawals({ queue, onAction }) {
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState(() => (Array.isArray(queue) && queue.length > 0 ? queue : []));
+  const [loading, setLoading] = useState(() => !(Array.isArray(queue) && queue.length > 0));
 
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');

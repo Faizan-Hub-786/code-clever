@@ -33,6 +33,10 @@ import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { fmt, getAppIconUrl } from '../utils/formatters';
 import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
+let lastAnnouncementFetch = 0;
+let cachedAnnouncement = null;
+const ANNOUNCEMENT_TTL = 60000;
+
 export default function HomePage() {
   const nav = useNavigate();
   const [slide, setSlide] = useState(0);
@@ -181,14 +185,31 @@ export default function HomePage() {
     window.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('focus', onVisibilityChange);
 
-    // Fetch active announcement for start pop-up
+    // Fetch active announcement for start pop-up (cached to avoid redundant round trips on tab switch)
     const fetchAnnouncement = async () => {
+      const now = Date.now();
+      if (now - lastAnnouncementFetch < ANNOUNCEMENT_TTL && cachedAnnouncement !== undefined) {
+        if (cachedAnnouncement) {
+          const ann = cachedAnnouncement;
+          const mode = ann.display_mode || 'every_visit';
+          let shouldShow = true;
+          if (mode === 'once_per_session' && sessionStorage.getItem(`cc_ann_dismissed_${ann.id}`)) shouldShow = false;
+          if (mode === 'once_per_login' && localStorage.getItem(`cc_ann_dismissed_${ann.id}`)) shouldShow = false;
+          if (shouldShow) {
+            setActiveAnnouncement(ann);
+            setShowAnnouncementModal(true);
+          }
+        }
+        return;
+      }
+      lastAnnouncementFetch = now;
       try {
         const r = await fetch(`${API_BASE_URL}/announcements/active`);
         if (r.ok) {
           const data = await r.json();
           if (Array.isArray(data) && data.length > 0) {
             const ann = data[0];
+            cachedAnnouncement = ann;
             const mode = ann.display_mode || 'every_visit';
             let shouldShow = true;
 
@@ -202,6 +223,8 @@ export default function HomePage() {
               setActiveAnnouncement(ann);
               setShowAnnouncementModal(true);
             }
+          } else {
+            cachedAnnouncement = null;
           }
         }
       } catch {}

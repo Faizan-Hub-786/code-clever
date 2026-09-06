@@ -1580,10 +1580,41 @@
 }
 
 /* ----------------------------------------------------
-   WEBSITE 75% ZOOM OUT & LARGE TOPBAR HEADER STYLES
+   WEBSITE & ADMIN 110% DESKTOP ZOOM & VIEWPORT STABILIZATION
+   Desktop view settles cleanly at 110% zoom, while mobile & tablet
+   remain rock-solid at native 100% scale (zoom: 1 !important).
 ---------------------------------------------------- */
-body {
-  zoom: 75%;
+@media (min-width: 901px) {
+  html {
+    zoom: 1.1;
+  }
+}
+
+@media (max-width: 900px) {
+  html, body {
+    zoom: 1 !important;
+  }
+}
+
+/* Settle desktop and responsive layout elements */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .stats.home-stats,
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-grid-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.package-matrix-card,
+.team-bonus-card {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cc-topbar {

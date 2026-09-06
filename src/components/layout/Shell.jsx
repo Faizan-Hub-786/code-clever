@@ -162,7 +162,9 @@ export default function Shell({ children }) {
                   <button
                     key={path}
                     className={`cc-dock-item ${active ? 'active' : ''}`}
-                    onClick={() => navigate(path)}
+                    onClick={() => {
+                      if (!active) navigate(path);
+                    }}
                     title={label}
                     aria-label={label}
                   >

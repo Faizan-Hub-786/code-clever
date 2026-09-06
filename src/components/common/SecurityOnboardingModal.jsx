@@ -15,13 +15,16 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL, getAuthHeaders } from '../../api/config';
 
+let cachedSecurityConfig = null; // { qSet: boolean, fSet: boolean, checkedAt: number }
+const SECURITY_CHECK_TTL = 300000; // 5 minutes cache
+
 export default function SecurityOnboardingModal() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isQuestionSet, setIsQuestionSet] = useState(true);
-  const [isFundSet, setIsFundSet] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [isQuestionSet, setIsQuestionSet] = useState(() => cachedSecurityConfig?.qSet ?? true);
+  const [isFundSet, setIsFundSet] = useState(() => cachedSecurityConfig?.fSet ?? true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Don't show if already on security settings or auth pages
@@ -36,6 +39,16 @@ export default function SecurityOnboardingModal() {
     // Check if dismissed for this tab session
     const isDismissed = sessionStorage.getItem('cc_dismissed_security_prompt');
     if (isDismissed === 'true') {
+      return;
+    }
+
+    const now = Date.now();
+    if (cachedSecurityConfig && now - cachedSecurityConfig.checkedAt < SECURITY_CHECK_TTL) {
+      setIsQuestionSet(cachedSecurityConfig.qSet);
+      setIsFundSet(cachedSecurityConfig.fSet);
+      if (!cachedSecurityConfig.qSet || !cachedSecurityConfig.fSet) {
+        setIsOpen(true);
+      }
       return;
     }
 
@@ -59,6 +72,8 @@ export default function SecurityOnboardingModal() {
           fSet = Boolean(fData.isSet);
           setIsFundSet(fSet);
         }
+
+        cachedSecurityConfig = { qSet, fSet, checkedAt: Date.now() };
 
         // If either security question or fund password is not configured, open the prompt
         if (!qSet || !fSet) {

@@ -34,11 +34,16 @@ import { DEFAULT_PLANS, PLANS_FALLBACK_OBJECTS } from '../constants/plans';
 import { fmt } from '../utils/formatters';
 import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
+let cachedPlansData = null;
+
 export default function PlansPage() {
   const nav = useNavigate();
-  const [plans, setPlans] = useState(PLANS_FALLBACK_OBJECTS);
-  const [activePlan, setActivePlan] = useState(() => getCachedWallet().plan_code);
-  const [isIntern, setIsIntern] = useState(() => !getCachedWallet().plan_code || getCachedWallet().plan_code === 'INTERN');
+  const [plans, setPlans] = useState(() => cachedPlansData?.plans || PLANS_FALLBACK_OBJECTS);
+  const [activePlan, setActivePlan] = useState(() => cachedPlansData?.activePlan ?? getCachedWallet().plan_code);
+  const [isIntern, setIsIntern] = useState(() => {
+    if (cachedPlansData) return !cachedPlansData.activePlan || cachedPlansData.activePlan === 'INTERN';
+    return !getCachedWallet().plan_code || getCachedWallet().plan_code === 'INTERN';
+  });
   const [walletBalance, setWalletBalance] = useState(() => getCachedWallet().total_balance);
   const [loading, setLoading] = useState(false);
   const [buying, setBuying] = useState(false);
@@ -66,6 +71,10 @@ export default function PlansPage() {
           total_balance: planBal,
           plan_code: d.activePlan?.code || null
         });
+        cachedPlansData = {
+          plans: d.plans?.length ? d.plans : plans,
+          activePlan: d.activePlan?.code || null
+        };
       }
     } catch {}
     setLoading(false);
