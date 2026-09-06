@@ -2598,91 +2598,70 @@
   font-weight: 600 !important;
 }
 
-/* 14. Responsive Layout Harmonization (PC, Tablet, Mobile) */
+/* ====================================================
+   ADMIN PANEL: FIXED DESKTOP LAYOUT FOR ALL DEVICES
+   Locks the exact desktop layout structure (fixed sidebar,
+   4-column KPI cards, search topbar, tables) across all
+   devices and screen sizes without collapsing.
+   ==================================================== */
+.admin-shopeers-root {
+  min-width: 1240px !important;
+  display: flex !important;
+  position: relative !important;
+}
+
+.shopeers-sidebar {
+  width: 260px !important;
+  min-width: 260px !important;
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transform: none !important;
+  box-shadow: none !important;
+  z-index: 100 !important;
+}
+
 .shopeers-mobile-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 998;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
+  display: none !important;
 }
 
-@media (min-width: 901px) and (max-width: 1240px) {
-  .shopeers-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
+.shopeers-mobile-toggle {
+  display: none !important;
 }
 
-@media (max-width: 1024px) {
-  .admin-shopeers-root .shopeers-content {
-    padding: 18px 20px 40px !important;
-  }
+.shopeers-collapse-btn {
+  display: none !important;
 }
 
-@media (max-width: 900px) {
-  .shopeers-mobile-overlay {
-    display: block;
-  }
-  .shopeers-mobile-overlay.mobile-open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .shopeers-sidebar {
-    position: fixed !important;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    height: 100vh !important;
-    z-index: 999 !important;
-    transform: translateX(-100%);
-    box-shadow: 0 0 35px rgba(0, 0, 0, 0.3);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .shopeers-sidebar.mobile-open {
-    transform: translateX(0);
-  }
-  .shopeers-mobile-toggle {
-    display: flex !important;
-  }
-  .shopeers-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-  }
-  .shopeers-topbar {
-    padding: 0 16px !important;
-    height: 64px !important;
-  }
-  .shopeers-search-wrap {
-    width: 200px !important;
-  }
+.shopeers-main {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-@media (max-width: 768px) {
-  .admin-shopeers-root .shopeers-content {
-    padding: 14px 12px 36px !important;
-  }
-  .admin-shopeers-root .admin-announcement-form-card,
-  .admin-shopeers-root .admin-announcements-list-card,
-  .admin-shopeers-root .bank-method-card,
-  .admin-shopeers-root .wheel-cc-card,
-  .admin-shopeers-root .task-form-card,
-  .admin-shopeers-root .task-pool-card {
-    padding: 16px !important;
-  }
-  .admin-shopeers-root .admin-section-head h2 {
-    font-size: 19px !important;
-  }
+.shopeers-topbar {
+  height: 72px !important;
+  padding: 0 28px !important;
+  display: flex !important;
+  justify-content: space-between !important;
 }
 
-@media (max-width: 600px) {
-  .shopeers-kpi-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .shopeers-search-wrap {
-    display: none;
-  }
+.shopeers-search-wrap {
+  width: 320px !important;
+  display: block !important;
+}
+
+.shopeers-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 18px !important;
+}
+
+.shopeers-content {
+  padding: 24px 28px 48px !important;
+  width: 100% !important;
+  max-width: 1600px !important;
 }

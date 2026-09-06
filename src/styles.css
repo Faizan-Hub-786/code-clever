@@ -1580,34 +1580,137 @@
 }
 
 /* ----------------------------------------------------
-   WEBSITE & ADMIN 110% DESKTOP ZOOM & VIEWPORT STABILIZATION
-   Desktop view settles cleanly at 110% zoom, while mobile & tablet
-   remain rock-solid at native 100% scale (zoom: 1 !important).
+   WEBSITE & ADMIN: FIXED DESKTOP LAYOUT FOR ALL DEVICES
+   Whole website zoomed to 110% globally.
+   Desktop layout is fixed and identical across mobile,
+   tablet, laptop, and desktop.
 ---------------------------------------------------- */
-@media (min-width: 901px) {
-  html {
-    zoom: 1.1;
-  }
+html {
+  zoom: 1.1 !important;
+  min-width: 1240px !important;
 }
 
-@media (max-width: 900px) {
-  html, body {
-    zoom: 1 !important;
-  }
+body,
+#root,
+.app-shell,
+.cc-main {
+  min-width: 1240px !important;
 }
 
-/* Settle desktop and responsive layout elements */
-@media (min-width: 901px) and (max-width: 1180px) {
-  .stats.home-stats,
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .plans-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .home-grid-section {
-    grid-template-columns: 1fr;
-  }
+/* Enforce desktop topbar across all devices */
+.cc-topbar {
+  min-width: 1240px !important;
+}
+.cc-topbar-container {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 12px 28px !important;
+  display: flex !important;
+}
+
+/* Enforce desktop hero banner */
+.home-hero {
+  grid-template-columns: 1.2fr 0.8fr !important;
+  padding: 28px 32px !important;
+  min-height: 240px !important;
+}
+.home-hero h1 {
+  font-size: 42px !important;
+}
+.hero-visual {
+  display: grid !important;
+  min-height: 220px !important;
+}
+.hero-character {
+  display: grid !important;
+  width: 170px !important;
+  height: 170px !important;
+}
+.hero-character img {
+  display: block !important;
+  width: 145px !important;
+  height: 145px !important;
+}
+.orbit-a, .orbit-b {
+  display: block !important;
+}
+.floating-badge {
+  display: flex !important;
+}
+
+/* Enforce desktop stats grid: 4 columns */
+.stats.home-stats,
+.stats {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 15px !important;
+}
+
+/* Enforce desktop today's task progress & referral: 2 columns */
+.home-grid-section {
+  display: grid !important;
+  grid-template-columns: 1.5fr 0.8fr !important;
+  gap: 18px !important;
+}
+
+/* Enforce desktop task page layout */
+.task-hero {
+  display: grid !important;
+  grid-template-columns: 1fr 0.7fr !important;
+  padding: 36px 42px !important;
+}
+.task-art {
+  display: grid !important;
+}
+.task-stats {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+.task-main {
+  display: grid !important;
+  grid-template-columns: 55px 92px 1fr 170px 190px !important;
+  gap: 14px !important;
+}
+.reward {
+  border-left: 1px solid #292541 !important;
+  padding-left: 20px !important;
+  border-top: none !important;
+  grid-column: auto !important;
+}
+.task-action {
+  grid-column: auto !important;
+  text-align: right !important;
+}
+
+/* Enforce desktop plans page layout */
+.plans-hero {
+  display: grid !important;
+  grid-template-columns: 1.2fr 0.8fr !important;
+  padding: 34px 44px !important;
+}
+.plans-hero-art {
+  display: grid !important;
+}
+.plans-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+}
+
+/* Enforce desktop partners network */
+.partners-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 14px !important;
+}
+
+/* Enforce desktop bottom dock navigation */
+.cc-bottom-dock-wrap {
+  min-width: 1240px !important;
+}
+.cc-bottom-dock-container {
+  max-width: 720px !important;
+  margin: 0 auto !important;
 }
 
 .package-matrix-card,
