@@ -1415,13 +1415,13 @@
 .task-items-list::-webkit-scrollbar{width:4px}
 .task-items-list::-webkit-scrollbar-thumb{background:#4b2a75;border-radius:4px}
 
-.task-item-card{display:flex;flex-direction:column;gap:6px;background:#090615;border:1px solid #291840;border-radius:12px;padding:10px 12px;transition:all .15s}
-.task-item-card:hover{border-color:#532985;background:#0f0b20}
-.task-item-card.inactive{opacity:0.6;border-style:dashed}
+.task-items-list .task-item-card{display:flex;flex-direction:column;gap:6px;background:#090615;border:1px solid #291840;border-radius:12px;padding:10px 12px;transition:all .15s}
+.task-items-list .task-item-card:hover{border-color:#532985;background:#0f0b20}
+.task-items-list .task-item-card.inactive{opacity:0.6;border-style:dashed}
 
-.task-card-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.task-card-identity{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.task-app-logo{width:36px;height:36px;border-radius:8px;object-fit:cover;background:#0c081a;border:1px solid #4a2872;flex-shrink:0}
+.task-items-list .task-card-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.task-items-list .task-card-identity{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.task-items-list .task-app-logo{width:36px;height:36px;border-radius:8px;object-fit:cover;background:#0c081a;border:1px solid #4a2872;flex-shrink:0}
 .task-card-titles{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 .task-card-titles h4{font-size:13px;font-weight:800;color:#fff;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -1580,147 +1580,8 @@
 }
 
 /* ----------------------------------------------------
-   FIT TO SCREEN: WEBSITE & NAV BAR (NO ZOOM IN/OUT)
-   Ensures the website and bottom navigation dock fit
-   edge-to-edge on all devices without horizontal scroll
-   or letterbox margins.
+   WEBSITE TOPBAR HEADER STYLES
 ---------------------------------------------------- */
-html {
-  width: 100% !important;
-  max-width: 100vw !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
-  touch-action: manipulation !important;
-  -webkit-text-size-adjust: 100% !important;
-}
-
-body,
-#root,
-.app-shell,
-.cc-main {
-  width: 100% !important;
-  max-width: 100vw !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
-  box-sizing: border-box !important;
-}
-
-/* FIT TO SCREEN TOPBAR */
-.cc-topbar {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100vw !important;
-  box-sizing: border-box !important;
-}
-.cc-topbar-container {
-  width: 100% !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 10px 16px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  box-sizing: border-box !important;
-}
-
-/* FIT TO SCREEN MAIN CONTENT */
-.cc-content {
-  width: 100% !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 16px 16px 110px 16px !important;
-  box-sizing: border-box !important;
-}
-
-/* FIT TO SCREEN BOTTOM NAV BAR */
-.cc-bottom-dock-wrap {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100vw !important;
-  z-index: 999 !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: flex-end !important;
-  pointer-events: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: linear-gradient(0deg, #05050b 65%, rgba(5, 5, 11, 0.85) 85%, transparent 100%) !important;
-}
-
-.cc-bottom-dock-container {
-  width: 100% !important;
-  max-width: 680px !important;
-  padding: 0 12px 10px 12px !important;
-  margin: 0 auto !important;
-  display: flex !important;
-  justify-content: center !important;
-  box-sizing: border-box !important;
-}
-
-.cc-bottom-dock {
-  pointer-events: auto !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  background: rgba(14, 9, 28, 0.97) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(192, 132, 252, 0.38) !important;
-  border-radius: 20px !important;
-  padding: 6px 8px !important;
-  display: grid !important;
-  grid-template-columns: repeat(6, 1fr) !important;
-  gap: 4px !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(168, 85, 247, 0.28) !important;
-  box-sizing: border-box !important;
-}
-
-.cc-dock-item {
-  min-width: 0 !important;
-  padding: 6px 2px 4px 2px !important;
-}
-
-@media (max-width: 600px) {
-  .cc-bottom-dock-container {
-    padding: 0 8px 8px 8px !important;
-  }
-  .cc-bottom-dock {
-    border-radius: 18px !important;
-    padding: 5px 3px !important;
-    gap: 2px !important;
-  }
-  .cc-dock-item .dock-label {
-    font-size: 9.5px !important;
-  }
-  .cc-dock-item .dock-icon-wrap svg {
-    width: 19px !important;
-    height: 19px !important;
-  }
-  .cc-content {
-    padding: 12px 10px 105px 10px !important;
-  }
-}
-
-.package-matrix-card,
-.team-bonus-card {
-  max-width: 100% !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-
-.package-matrix-card,
-.team-bonus-card {
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
 
 .cc-topbar {
   position: sticky;
@@ -3202,3 +3063,552 @@ body,
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* ==========================================================================
+   COMPREHENSIVE NATURAL RESPONSIVE LAYOUT ENGINE (MOBILE, TABLET & DESKTOP)
+   - Adapts the desktop visual hierarchy smoothly across all device widths
+   - Strict zero horizontal scrolling on viewport
+   - Stable card ordering, alignment, and spacing (no overlapping or jumping)
+   - Fully accessible touch targets (min 44px clickable areas)
+   - Zero zoom / scaling hacks
+   ========================================================================== */
+
+/* 1. Viewport & Body Structural Integrity */
+html {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body,
+#root,
+.app-shell,
+.cc-main {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* 2. Topbar & Brand Header Responsiveness */
+.cc-topbar {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8, 5, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1.5px solid rgba(168, 61, 255, 0.25);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.cc-topbar-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .cc-topbar-container {
+    padding: 10px 16px;
+  }
+  .cc-top-brand span {
+    font-size: 16px;
+    letter-spacing: 1.5px;
+  }
+  .cc-brand-logo-img {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+  .topbar-back-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+  .icon-btn.notification-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+  }
+  .cc-user-menu {
+    padding: 4px 12px 4px 4px;
+    gap: 8px;
+  }
+  .cc-user-menu img,
+  .top-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+  .cc-user-menu span {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cc-topbar-container {
+    padding: 8px 12px;
+  }
+  .cc-topbar-left {
+    gap: 10px;
+  }
+  .cc-top-actions {
+    gap: 8px;
+  }
+  .cc-top-brand span {
+    font-size: 14.5px;
+    letter-spacing: 1px;
+  }
+  .cc-user-menu span {
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* 3. Main Content Container */
+.cc-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px 110px 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .cc-content {
+    padding: 14px 14px 105px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cc-content {
+    padding: 10px 10px 100px 10px;
+  }
+}
+
+/* 4. Home Page Hero Banner Adaptability */
+@media (max-width: 860px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
+    gap: 20px;
+  }
+  .home-hero h1 {
+    font-size: 32px;
+    line-height: 1.15;
+  }
+  .hero-copy p {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .hero-visual {
+    min-height: 190px;
+  }
+  .hero-character {
+    width: 130px;
+    height: 130px;
+  }
+  .hero-character img {
+    width: 105px;
+    height: 105px;
+  }
+  .floating-badge {
+    padding: 6px 10px;
+    border-radius: 11px;
+  }
+  .floating-badge span {
+    font-size: 9px;
+  }
+  .floating-badge strong {
+    font-size: 12px;
+  }
+  .badge-income {
+    right: 4%;
+    top: 8px;
+  }
+  .badge-task {
+    left: 4%;
+    bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero {
+    padding: 18px 14px;
+    border-radius: 20px;
+  }
+  .hero-trust {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .home-hero h1 {
+    font-size: 27px;
+  }
+  .home-hero .actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+  .home-hero .actions button {
+    width: 100%;
+    min-height: 48px;
+    font-size: 14px;
+  }
+}
+
+/* 5. 8 3D Quick Action Icons */
+.home-icons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 10px;
+}
+
+@media (max-width: 600px) {
+  .home-icons-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px 6px;
+  }
+  .home-icon-card {
+    padding: 8px 4px;
+    min-height: 82px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .home-icon-img-wrap {
+    width: 44px;
+    height: 44px;
+  }
+  .home-icon-img-wrap img {
+    width: 40px;
+    height: 40px;
+  }
+  .home-icon-title {
+    font-size: 10.5px;
+    line-height: 1.2;
+    text-align: center;
+    margin-top: 5px;
+  }
+}
+
+/* 6. Standardized 2x2 Stats Grid across Mobile (Never collapse into a single giant column!) */
+@media (max-width: 900px) {
+  .stats,
+  .home-stats,
+  .task-stats {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    margin: 16px 0 !important;
+  }
+  .stat {
+    padding: 14px 16px !important;
+    border-radius: 16px !important;
+  }
+  .stat-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 11px !important;
+  }
+  .stat strong {
+    font-size: 17px !important;
+  }
+  .stat small {
+    font-size: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats,
+  .home-stats,
+  .task-stats {
+    gap: 8px !important;
+  }
+  .stat {
+    padding: 12px 10px !important;
+    gap: 10px !important;
+  }
+  .stat strong {
+    font-size: 15px !important;
+  }
+}
+
+/* 7. Today's Task Progress & Referral Grid on Home */
+@media (max-width: 860px) {
+  .home-grid-section {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .daily-card,
+  .referral-card {
+    padding: 18px 16px !important;
+    border-radius: 20px !important;
+  }
+  .progress-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 18px !important;
+  }
+  .progress-ring {
+    width: 130px !important;
+    height: 130px !important;
+    flex: 0 0 130px !important;
+  }
+  .progress-ring strong {
+    font-size: 24px !important;
+  }
+  .progress-copy {
+    width: 100% !important;
+  }
+  .progress-copy h3 {
+    font-size: 16px !important;
+  }
+  .progress-copy p {
+    font-size: 12.5px !important;
+  }
+  .ref-code {
+    padding: 10px 12px !important;
+    margin: 14px 0 !important;
+  }
+  .ref-code span {
+    font-size: 15px !important;
+  }
+}
+
+/* 8. Partners Network Grid */
+@media (max-width: 900px) {
+  .partners-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+@media (max-width: 540px) {
+  .partners-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .partner-card {
+    padding: 12px 10px !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* 9. Task Center User-Facing Cards (TasksPage.jsx) */
+.task-item-card {
+  border: 1px solid #3c2460;
+  border-radius: 24px;
+  background: linear-gradient(150deg, rgba(16, 10, 36, 0.94), rgba(6, 6, 17, 0.98));
+  padding: 22px 24px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+  position: relative;
+  transition: border-color 0.25s;
+}
+
+@media (max-width: 768px) {
+  .task-item-card {
+    padding: 16px 14px !important;
+    border-radius: 18px !important;
+    margin-bottom: 14px !important;
+  }
+  .task-card-top {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+  .task-app-col {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  .task-app-logo {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 14px !important;
+  }
+  .task-app-details h3 {
+    font-size: 16px !important;
+    margin: 0 0 2px !important;
+  }
+  .task-app-details p {
+    font-size: 11.5px !important;
+    margin: 0 0 4px !important;
+  }
+  .task-reward-and-action {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  .task-reward-col {
+    min-width: auto !important;
+    text-align: left !important;
+  }
+  .task-reward-col strong {
+    font-size: 19px !important;
+  }
+  .task-action-col {
+    align-items: flex-end !important;
+  }
+  .task-download-btn,
+  .task-completed-badge {
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+    border-radius: 11px !important;
+  }
+  .task-steps-timeline {
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    gap: 4px !important;
+  }
+  .node-circle {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 13px !important;
+  }
+  .timeline-node span {
+    font-size: 9px !important;
+  }
+}
+
+/* 10. Plans Page Grid & Responsive Tables */
+@media (max-width: 960px) {
+  .plans-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+@media (max-width: 600px) {
+  .plans-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .plan-card {
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+  .plans-hero {
+    padding: 24px 18px !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .plans-hero-art {
+    display: none !important;
+  }
+}
+
+/* Strict Container Scroller for Data Tables */
+.package-matrix-card,
+.team-bonus-card,
+.admin-table-wrap,
+.shopeers-table-responsive {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+.matrix-table {
+  min-width: 600px !important;
+  width: 100% !important;
+}
+
+/* 11. Bottom Dock Navigation Fitting Edge-to-Edge */
+.cc-bottom-dock-wrap {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  z-index: 999 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+  pointer-events: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: linear-gradient(0deg, #05050b 70%, rgba(5, 5, 11, 0.88) 88%, transparent 100%) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+.cc-bottom-dock-container {
+  width: 100% !important;
+  max-width: 680px !important;
+  padding: 0 12px 10px 12px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+.cc-bottom-dock {
+  pointer-events: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  background: rgba(14, 9, 28, 0.97) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(192, 132, 252, 0.38) !important;
+  border-radius: 20px !important;
+  padding: 6px 8px !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 4px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(168, 85, 247, 0.28) !important;
+  box-sizing: border-box !important;
+}
+
+.cc-dock-item {
+  min-width: 0 !important;
+  padding: 6px 2px 4px 2px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+@media (max-width: 600px) {
+  .cc-bottom-dock-container {
+    padding: 0 6px 8px 6px !important;
+  }
+  .cc-bottom-dock {
+    border-radius: 18px !important;
+    padding: 5px 2px !important;
+    gap: 1px !important;
+  }
+  .cc-dock-item .dock-label {
+    font-size: 9.5px !important;
+    letter-spacing: -0.2px !important;
+  }
+  .cc-dock-item .dock-icon-wrap svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+}
+
