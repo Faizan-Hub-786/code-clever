@@ -2605,9 +2605,13 @@
    devices and screen sizes without collapsing.
    ==================================================== */
 .admin-shopeers-root {
-  min-width: 1240px !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
   display: flex !important;
   position: relative !important;
+  box-sizing: border-box !important;
 }
 
 .shopeers-sidebar {
