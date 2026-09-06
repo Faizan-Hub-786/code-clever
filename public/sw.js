@@ -56,6 +56,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Bypass local development and Vite development internal modules completely
+  if (
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/src') ||
+    url.pathname.startsWith('/node_modules') ||
+    url.searchParams.has('v')
+  ) {
+    return;
+  }
+
   // Navigation requests (HTML pages): Network-first with Cache fallback to ensure fresh auth state
   if (request.mode === 'navigate') {
     event.respondWith(

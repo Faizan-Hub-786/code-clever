@@ -3,6 +3,21 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    dedupe: ['react', 'react-dom', 'react-router-dom', 'framer-motion']
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      'react-router-dom',
+      'framer-motion',
+      'lucide-react'
+    ]
+  },
   server: {
     port: 5173,
     proxy: {
@@ -30,13 +45,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('xlsx')) return 'vendor-xlsx';
-            if (id.includes('framer-motion')) return 'vendor-framer';
-            if (id.includes('lucide-react')) return 'vendor-icons';
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
+          if (id.includes('node_modules') && id.includes('xlsx')) {
+            return 'vendor-xlsx';
           }
         }
       }

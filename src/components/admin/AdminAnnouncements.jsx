@@ -19,9 +19,11 @@ import { API_BASE_URL, getAuthHeaders } from '../../api/config';
 import { normalizeImageUrl, getAppIconUrl } from '../../utils/formatters';
 import DualImageUpload from '../common/DualImageUpload';
 
+let cachedAdminAnnouncements = null;
+
 export default function AdminAnnouncements({ onAction }) {
-  const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [announcements, setAnnouncements] = useState(() => cachedAdminAnnouncements || []);
+  const [loading, setLoading] = useState(!cachedAdminAnnouncements);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -49,7 +51,9 @@ export default function AdminAnnouncements({ onAction }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setAnnouncements(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        cachedAdminAnnouncements = list;
+        setAnnouncements(list);
       }
     } catch (err) {
       console.error('Failed to fetch announcements:', err);
@@ -447,7 +451,7 @@ export default function AdminAnnouncements({ onAction }) {
                   onChange={(e) => setForm({ ...form, isPinned: e.target.checked })}
                   style={{ width: 16, height: 16, accentColor: '#cb4eff' }}
                 />
-                <b style={{ color: '#f5d0fe', fontSize: 13 }}>📌 Pin to Top</b>
+                <b style={{ color: '#0f172a', fontSize: 13 }}>📌 Pin to Top</b>
               </label>
 
               <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -457,7 +461,7 @@ export default function AdminAnnouncements({ onAction }) {
                   onChange={(e) => setForm({ ...form, active: e.target.checked })}
                   style={{ width: 16, height: 16, accentColor: '#10b981' }}
                 />
-                <b style={{ color: '#fff', fontSize: 13 }}>Active (Published)</b>
+                <b style={{ color: '#0f172a', fontSize: 13 }}>Active (Published)</b>
               </label>
             </div>
           </div>
@@ -576,7 +580,7 @@ export default function AdminAnnouncements({ onAction }) {
                       </td>
                       <td style={{ maxWidth: 280 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <b style={{ color: '#fff', fontSize: 13 }}>{a.title}</b>
+                          <b style={{ color: '#0f172a', fontSize: 13 }}>{a.title}</b>
                           {isPinned && (
                             <span style={{ background: '#f59e0b20', color: '#fbbf24', border: '1px solid #f59e0b40', fontSize: 10, padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
                               📌 Pinned

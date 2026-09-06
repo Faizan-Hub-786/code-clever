@@ -31,13 +31,14 @@ import Shell from '../components/layout/Shell';
 import Stat from '../components/common/Stat';
 import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { fmt, getAppIconUrl } from '../utils/formatters';
+import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
 export default function HomePage() {
   const nav = useNavigate();
   const [slide, setSlide] = useState(0);
   const [copied, setCopied] = useState(false);
   const [showNotice, setShowNotice] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Pop-up modals state
   const [showLoanModal, setShowLoanModal] = useState(false);
@@ -50,12 +51,33 @@ export default function HomePage() {
     setTimeout(() => setToastMsg(''), 3500);
   };
 
-  const [dashboard, setDashboard] = useState({
-    wallet: { available_balance: 0, lifetime_earned: 0 },
-    plan: { code: 'C1', daily_task_count: 2, unit_reward: 59 },
-    task_progress: { total: 2, completed: 0, percentage: 0 },
-    team: { total_members: 0, lifetime_commission: 0 },
-    profile: { full_name: 'Code Clever User', referral_code: 'CC1000' }
+  const [dashboard, setDashboard] = useState(() => {
+    const cached = getCachedWallet();
+    return {
+      wallet: {
+        available_balance: cached.available_balance,
+        total_balance: cached.total_balance,
+        personal_balance: cached.personal_balance,
+        commission_balance: cached.commission_balance,
+        lifetime_earned: cached.lifetime_earned
+      },
+      available_balance: cached.available_balance,
+      personal_balance: cached.personal_balance,
+      commission_balance: cached.commission_balance,
+      total_balance: cached.total_balance,
+      plan: { code: cached.plan_code || 'C1', daily_task_count: 2, unit_reward: 59 },
+      summary: {
+        available_balance: cached.available_balance,
+        today_earned: cached.today_earned || 0,
+        monthly_earned: cached.monthly_earned || 0,
+        team_earned: 0,
+        tasks_completed: cached.tasks_completed || 0,
+        tasks_total: 2
+      },
+      task_progress: { total: 2, completed: cached.tasks_completed || 0, percentage: 0 },
+      team: { total_members: 0, lifetime_commission: 0 },
+      profile: { full_name: cached.user_name || 'Code Clever User', referral_code: cached.referral_code || 'CC1000' }
+    };
   });
 
   const slides = [
@@ -110,11 +132,45 @@ export default function HomePage() {
         if (r.ok) {
           const d = await r.json();
           setDashboard(d);
+          setCachedWallet({
+            available_balance: d.available_balance ?? d.wallet?.available_balance,
+            personal_balance: d.personal_balance ?? d.wallet?.personal_balance,
+            commission_balance: d.commission_balance ?? d.wallet?.commission_balance,
+            total_balance: d.total_balance ?? d.wallet?.total_balance,
+            lifetime_earned: d.wallet?.lifetime_earned,
+            today_earned: d.summary?.today_earned,
+            monthly_earned: d.summary?.monthly_earned,
+            tasks_completed: d.task_progress?.completed,
+            plan_code: d.plan?.code,
+            user_name: d.profile?.full_name,
+            referral_code: d.profile?.referral_code
+          });
         }
       } catch {}
       setLoading(false);
     };
     fetchDashboard();
+
+    // Listen for instant wallet updates from other pages
+    const handleWalletUpdate = (e) => {
+      const u = e.detail;
+      if (!u) return;
+      setDashboard((prev) => ({
+        ...prev,
+        wallet: {
+          ...prev.wallet,
+          available_balance: u.available_balance,
+          total_balance: u.total_balance,
+          personal_balance: u.personal_balance,
+          commission_balance: u.commission_balance
+        },
+        available_balance: u.available_balance,
+        personal_balance: u.personal_balance,
+        commission_balance: u.commission_balance,
+        total_balance: u.total_balance
+      }));
+    };
+    window.addEventListener('cc_wallet_updated', handleWalletUpdate);
 
     // Fetch active announcement for start pop-up
     const fetchAnnouncement = async () => {
@@ -142,6 +198,10 @@ export default function HomePage() {
       } catch {}
     };
     fetchAnnouncement();
+
+    return () => {
+      window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
+    };
   }, []);
 
   const handleDismissAnnouncement = () => {
@@ -156,11 +216,12 @@ export default function HomePage() {
     setShowAnnouncementModal(false);
   };
 
-  // Auto-scroll Platform Highlights every 2 seconds repeatedly
+  // Auto-scroll Platform Highlights every 4.5 seconds repeatedly (paused if tab inactive)
   useEffect(() => {
     const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       setSlide((s) => (s + 1) % slides.length);
-    }, 2000);
+    }, 4500);
     return () => clearInterval(timer);
   }, [slides.length]);
 

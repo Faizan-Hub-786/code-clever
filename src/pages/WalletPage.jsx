@@ -17,20 +17,25 @@ import Shell from '../components/layout/Shell';
 import Stat from '../components/common/Stat';
 import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { fmt, fmtDate } from '../utils/formatters';
+import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
 export default function WalletPage() {
   const nav = useNavigate();
-  const [wallet, setWallet] = useState({
-    available_balance: 0,
-    personal_balance: 0,
-    commission_balance: 0,
-    pending_balance: 0,
-    lifetime_earned: 0,
-    total_withdrawn: 0
+  const [wallet, setWallet] = useState(() => {
+    const cached = getCachedWallet();
+    return {
+      available_balance: cached.total_balance ?? (cached.available_balance + cached.commission_balance),
+      personal_balance: cached.personal_balance ?? cached.available_balance,
+      commission_balance: cached.commission_balance,
+      total_balance: cached.total_balance,
+      pending_balance: cached.pending_balance || 0,
+      lifetime_earned: cached.lifetime_earned || 0,
+      total_withdrawn: 0
+    };
   });
   const [transactions, setTransactions] = useState([]);
   const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchWallet = async () => {
@@ -38,13 +43,37 @@ export default function WalletPage() {
         const r = await fetch(`${API_BASE_URL}/wallet`, { headers: getAuthHeaders() });
         if (r.ok) {
           const d = await r.json();
-          setWallet(d.wallet || d || {});
+          const w = d.wallet || d || {};
+          setWallet(w);
           setTransactions(d.transactions || []);
+          setCachedWallet({
+            available_balance: w.available_balance,
+            personal_balance: w.personal_balance,
+            commission_balance: w.commission_balance,
+            total_balance: w.total_balance,
+            pending_balance: w.pending_balance,
+            lifetime_earned: w.lifetime_earned
+          });
         }
       } catch {}
       setLoading(false);
     };
     fetchWallet();
+
+    const handleWalletUpdate = (e) => {
+      const u = e.detail;
+      if (!u) return;
+      setWallet((prev) => ({
+        ...prev,
+        available_balance: u.total_balance ?? (u.available_balance + u.commission_balance),
+        personal_balance: u.personal_balance ?? u.available_balance,
+        commission_balance: u.commission_balance,
+        total_balance: u.total_balance,
+        lifetime_earned: u.lifetime_earned ?? prev.lifetime_earned
+      }));
+    };
+    window.addEventListener('cc_wallet_updated', handleWalletUpdate);
+    return () => window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
   }, []);
 
   const filtered = transactions.filter((t) => {
@@ -119,7 +148,8 @@ export default function WalletPage() {
           </div>
         </div>
 
-        <div className="admin-table-wrap">
+        {/* Desktop Table View */}
+        <div className="admin-table-wrap desktop-table-view">
           <table className="admin-table">
             <thead>
               <tr>
@@ -133,16 +163,16 @@ export default function WalletPage() {
             </thead>
             <tbody>
               {filtered.map((t, idx) => {
-                const isPositive = ['deposit', 'task_reward', 'commission', 'wheel_win'].includes(t.type);
+                const isPositive = t.direction ? t.direction === 'credit' : ['deposit', 'task_reward', 'commission', 'wheel_win', 'bonus', 'spin_reward', 'daily_checkin'].includes(t.type);
                 return (
                   <tr key={t.id || idx}>
                     <td>{fmtDate(t.created_at)}</td>
                     <td>
-                      <span className={`status-chip ${t.type}`}>{t.type?.replace('_', ' ')}</span>
+                      <span className={`status-chip ${t.type}`}>{t.type?.replace(/_/g, ' ')}</span>
                     </td>
                     <td>{t.description || 'Transaction'}</td>
                     <td>
-                      <b style={{ color: isPositive ? '#7ee0aa' : '#ff7a7a' }}>
+                      <b style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
                         {isPositive ? '+' : '-'} Rs. {fmt(t.amount)}
                       </b>
                     </td>
@@ -164,6 +194,45 @@ export default function WalletPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Zero-Scroll Cards View */}
+        <div className="mobile-tx-cards-view">
+          {filtered.map((t, idx) => {
+            const isPositive = t.direction ? t.direction === 'credit' : ['deposit', 'task_reward', 'commission', 'wheel_win', 'bonus', 'spin_reward', 'daily_checkin'].includes(t.type);
+            return (
+              <div key={t.id || idx} className="mobile-tx-card">
+                <div className="mobile-tx-card-top">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span className={`status-chip ${t.type}`}>{t.type?.replace(/_/g, ' ')}</span>
+                    <small style={{ color: '#94a3b8', fontSize: '11px' }}>{fmtDate(t.created_at)}</small>
+                  </div>
+                  <b style={{ color: isPositive ? '#4ade80' : '#f87171', fontSize: '15px', fontWeight: 800 }}>
+                    {isPositive ? '+' : '-'} Rs. {fmt(t.amount)}
+                  </b>
+                </div>
+                <div className="mobile-tx-card-bottom">
+                  <span style={{ fontSize: '12px', color: '#e2e8f0', fontWeight: 500 }}>
+                    {t.description || 'Wallet Transaction'}
+                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                    <small style={{ color: '#a78bfa', fontSize: '11px' }}>
+                      Balance After: <b>Rs. {fmt(t.balance_after)}</b>
+                    </small>
+                    <span className={`status-chip ${t.status || 'completed'}`} style={{ fontSize: '10px', padding: '2px 8px' }}>
+                      {t.status || 'completed'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {!filtered.length && (
+            <div className="wallet-empty" style={{ padding: '30px 15px' }}>
+              <Receipt size={32} />
+              <p>No transactions found in this category.</p>
+            </div>
+          )}
         </div>
       </div>
     </Shell>

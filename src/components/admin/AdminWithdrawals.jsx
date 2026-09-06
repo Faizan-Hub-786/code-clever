@@ -181,24 +181,24 @@ export default function AdminWithdrawals({ queue, onAction }) {
                       </td>
                       <td>
                         <div className="user-cell">
-                          <strong style={{ color: '#c084fc' }}>{w.method ? w.method.toUpperCase() : 'Wallet'} • {w.account_title || '—'}</strong>
+                          <strong style={{ color: '#2563eb' }}>{w.method ? w.method.toUpperCase() : 'Wallet'} • {w.account_title || '—'}</strong>
                           <small>{w.account_number || '—'}</small>
                         </div>
                       </td>
                       <td>
-                        <strong>Rs. {fmt(w.amount)}</strong>
+                        <strong style={{ color: '#0f172a' }}>Rs. {fmt(w.amount)}</strong>
                         {w.wallet_type && (
-                          <small style={{ display: 'block', color: '#a855f7', fontSize: 10, textTransform: 'capitalize' }}>
+                          <small style={{ display: 'block', color: '#7c3aed', fontSize: 10, fontWeight: 700, textTransform: 'capitalize' }}>
                             {w.wallet_type} Wallet
                           </small>
                         )}
                       </td>
                       <td>
-                        <strong className="cash-won-text" style={{ color: '#4ade80', fontSize: 14 }}>
+                        <strong className="cash-won-text" style={{ color: '#059669', fontSize: 14, fontWeight: 800 }}>
                           Rs. {fmt(w.net_amount !== undefined ? w.net_amount : (Number(w.amount) - Number(w.fee || w.tax_amount || 0)))}
                         </strong>
                         {Number(w.fee || w.tax_amount) > 0 ? (
-                          <small style={{ display: 'block', color: '#f87171', fontSize: 10, fontWeight: 600 }}>
+                          <small style={{ display: 'block', color: '#dc2626', fontSize: 10, fontWeight: 700 }}>
                             10% Tax: -Rs. {fmt(w.fee || w.tax_amount)}
                           </small>
                         ) : null}

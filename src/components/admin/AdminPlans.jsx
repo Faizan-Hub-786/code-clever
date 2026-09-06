@@ -212,7 +212,7 @@ export default function AdminPlans({ plans = [], onAction }) {
 
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#cbd5e1', marginBottom: 4, fontWeight: 700 }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#334155', marginBottom: 5, fontWeight: 700 }}>
                   Package Name / Title
                 </label>
                 <input
@@ -225,7 +225,7 @@ export default function AdminPlans({ plans = [], onAction }) {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#cbd5e1', marginBottom: 4, fontWeight: 700 }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#334155', marginBottom: 5, fontWeight: 700 }}>
                   Job Bond Price (PKR)
                 </label>
                 <input
@@ -239,7 +239,7 @@ export default function AdminPlans({ plans = [], onAction }) {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11.5px', color: '#cbd5e1', marginBottom: 4, fontWeight: 700 }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#334155', marginBottom: 5, fontWeight: 700 }}>
                     Daily Tasks Quota
                   </label>
                   <input
@@ -253,7 +253,7 @@ export default function AdminPlans({ plans = [], onAction }) {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11.5px', color: '#cbd5e1', marginBottom: 4, fontWeight: 700 }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#334155', marginBottom: 5, fontWeight: 700 }}>
                     Reward per Task (PKR)
                   </label>
                   <input
@@ -267,9 +267,9 @@ export default function AdminPlans({ plans = [], onAction }) {
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(6,3,15,0.7)', border: '1px solid #291842', borderRadius: 12, padding: '12px 14px', fontSize: 12, color: '#aaa' }}>
-                <div>Estimated Daily Earnings: <b style={{ color: '#fff' }}>Rs. {fmt(Number(editForm.daily_task_count || 0) * Number(editForm.unit_reward || 0))}</b></div>
-                <div style={{ marginTop: 3 }}>Estimated Monthly Yield: <b style={{ color: '#4ade80' }}>Rs. {fmt(Number(editForm.daily_task_count || 0) * Number(editForm.unit_reward || 0) * 30)}</b></div>
+              <div style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '12px 14px', fontSize: 12.5, color: '#475569' }}>
+                <div>Estimated Daily Earnings: <b style={{ color: '#0f172a' }}>Rs. {fmt(Number(editForm.daily_task_count || 0) * Number(editForm.unit_reward || 0))}</b></div>
+                <div style={{ marginTop: 4 }}>Estimated Monthly Yield: <b style={{ color: '#059669' }}>Rs. {fmt(Number(editForm.daily_task_count || 0) * Number(editForm.unit_reward || 0) * 30)}</b></div>
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>

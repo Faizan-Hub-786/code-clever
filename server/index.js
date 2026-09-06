@@ -141,7 +141,8 @@ function auth(req, res, next) {
 async function adminOnly(req, res, next) {
   try {
     const [[u]] = await pool.execute(`SELECT id, full_name, email, role, status FROM users WHERE id=?`, [req.user.id]);
-    if (!u || u.status !== 'active' || u.role !== 'admin' || String(u.email || '').trim().toLowerCase() !== 'faizanbarvi786@gmail.com') {
+    const allowedAdminEmails = ['faizanbarvi786@gmail.com', 'faizan0687@gmail.com'];
+    if (!u || u.status !== 'active' || u.role !== 'admin' || !allowedAdminEmails.includes(String(u.email || '').trim().toLowerCase())) {
       return res.status(403).json({ message: 'Access denied: Administrator privileges required.' });
     }
     req.admin = u;
@@ -282,6 +283,13 @@ async function initDatabase() {
       await pool.execute(`ALTER TABLE deposits ADD COLUMN sender_number VARCHAR(80) NULL`);
     } catch {}
 
+    // Security question columns on users
+    try { await pool.execute(`ALTER TABLE users ADD COLUMN security_question VARCHAR(255) NULL DEFAULT 'What was the name of your first school?'`); } catch {}
+    try { await pool.execute(`ALTER TABLE users ADD COLUMN security_answer_hash VARCHAR(255) NULL`); } catch {}
+
+    // is_locked column on plans
+    try { await pool.execute(`ALTER TABLE plans ADD COLUMN is_locked TINYINT(1) NOT NULL DEFAULT 0`); } catch {}
+
     // A/B/C Team structure columns on users
     try { await pool.execute(`ALTER TABLE users ADD COLUMN root_leader_id BIGINT UNSIGNED NULL DEFAULT NULL`); } catch {}
     try { await pool.execute(`ALTER TABLE users ADD COLUMN team_level ENUM('A','B','C') NULL DEFAULT NULL`); } catch {}
@@ -289,6 +297,55 @@ async function initDatabase() {
     try { await pool.execute(`CREATE INDEX idx_users_root_leader ON users(root_leader_id, team_level)`); } catch {}
     try { await pool.execute(`CREATE INDEX idx_users_referred_by ON users(referred_by)`); } catch {}
     try { await pool.execute(`CREATE INDEX idx_users_team_level ON users(team_level)`); } catch {}
+
+    // Ensure guest_chat_messages table exists
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS guest_chat_messages (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        session_token VARCHAR(64) NOT NULL,
+        sender ENUM('user','bot','admin') NOT NULL DEFAULT 'user',
+        message TEXT NOT NULL,
+        user_email VARCHAR(190) NULL,
+        is_pinned TINYINT(1) NOT NULL DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_gcm_token (session_token),
+        INDEX idx_gcm_created (created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // Ensure support_inquiries table exists
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS support_inquiries (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        user_id BIGINT UNSIGNED NULL,
+        category VARCHAR(100) NOT NULL,
+        message TEXT NOT NULL,
+        attachment_url LONGTEXT NULL,
+        status ENUM('pending','replied','closed') NOT NULL DEFAULT 'pending',
+        admin_reply TEXT NULL,
+        replied_by BIGINT UNSIGNED NULL,
+        replied_at DATETIME NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_si_user (user_id),
+        INDEX idx_si_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    try { await pool.execute(`ALTER TABLE support_inquiries MODIFY COLUMN user_id BIGINT UNSIGNED NULL DEFAULT NULL`); } catch {}
+    try { await pool.execute(`ALTER TABLE support_inquiries ADD COLUMN attachment_url LONGTEXT NULL DEFAULT NULL`); } catch {}
+
+    // Ensure task_library has active tasks
+    try {
+      const [[libCount]] = await pool.execute(`SELECT COUNT(*) AS c FROM task_library`);
+      if (Number(libCount?.c || 0) === 0) {
+        await pool.execute(`
+          INSERT INTO task_library (title, category, app_icon, app_url, description, verification_type, active) VALUES
+          ('TikTok Lite', 'Social Video', '/assets/Apps Icons/tiktok.svg', 'https://www.tiktok.com/', 'Evaluate short-form video streaming latency, audio sync, and engagement response.', 'proof', 1),
+          ('Instagram Reels', 'Media & Photo', '/assets/Apps Icons/instagram.svg', 'https://www.instagram.com/', 'Verify instant reel playback buffer, story camera filter rendering, and DM delivery.', 'proof', 1),
+          ('Clash of Clans', 'Strategy Gaming', '/assets/Apps Icons/Clash of clan.jpg', 'https://supercell.com/', 'Evaluate 60 FPS multiplayer village load times and army attack animations.', 'proof', 1),
+          ('Gardenscapes', 'Casual Puzzle', '/assets/Apps Icons/Gardensacpes.jpg', 'https://playrix.com/', 'Test puzzle board gesture sensitivity and booster reward claiming responsiveness.', 'proof', 1)
+        `);
+      }
+    } catch {}
 
     // Export history table
     await pool.execute(`
@@ -584,7 +641,7 @@ async function getActivePlan(conn, userId) {
   }
 
   // No active paid plan: Evaluate 3-day Intern Trial based on users.created_at
-  const [[u]] = await conn.execute(`SELECT created_at, full_name FROM users WHERE id=?`, [userId]);
+  const [[u]] = await conn.execute(`SELECT created_at, full_name, role FROM users WHERE id=?`, [userId]);
   if (!u) return null;
 
   const now = new Date();
@@ -594,7 +651,7 @@ async function getActivePlan(conn, userId) {
   const diffDays = Math.floor(diffHours / 24);
   const trialEndsAt = new Date(regDate.getTime() + 3 * 24 * 60 * 60 * 1000);
   const remainingHours = Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60)));
-  const isTrialActive = diffHours < 72 && remainingHours > 0;
+  const isTrialActive = (diffHours < 72 && remainingHours > 0) || u.role === 'admin';
 
   if (isTrialActive) {
     // 3-Day Free Intern Trial: Exact same as C1 (2 tasks daily, Rs. 59 unit price, Rs. 118 daily income)
@@ -690,11 +747,13 @@ async function syncUserDailyTasks(conn, userId, plan = null) {
       );
 
       if (daily) {
-        await conn.execute(
-          `INSERT INTO user_task_assignments(user_id, daily_task_id, plan_id, reward, status)
-           VALUES(?, ?, ?, ?, 'available')`,
-          [userId, daily.id, plan.plan_id || 1, unitReward]
-        );
+        try {
+          await conn.execute(
+            `INSERT INTO user_task_assignments(user_id, daily_task_id, plan_id, reward, status)
+             VALUES(?, ?, ?, ?, 'available')`,
+            [userId, daily.id, plan.plan_id || 1, unitReward]
+          );
+        } catch {}
       }
     }
   }
@@ -1118,17 +1177,22 @@ app.post('/api/auth/admin-login', async (req, res) => {
     const { email, password } = req.body;
     const cleanEmail = String(email || '').trim().toLowerCase();
 
-    // Verify authorized master admin email address
-    if (cleanEmail !== 'faizanbarvi786@gmail.com') {
-      return res.status(403).json({ message: 'Access Denied: Invalid administrator credentials.' });
-    }
+    const allowedAdminEmails = ['faizan0687@gmail.com', 'faizanbarvi786@gmail.com'];
 
     const [rows] = await pool.execute(
       'SELECT id, full_name, email, password_hash, status, referral_code, role FROM users WHERE email=?',
       [cleanEmail]
     );
     const u = rows[0];
-    if (!u || !(await bcrypt.compare(password || '', u.password_hash))) {
+    if (!u) {
+      return res.status(401).json({ message: 'Invalid admin credentials. Account not found.' });
+    }
+
+    if (u.role !== 'admin' && !allowedAdminEmails.includes(cleanEmail)) {
+      return res.status(403).json({ message: 'Access Denied: Administrator privileges required.' });
+    }
+
+    if (!(await bcrypt.compare(password || '', u.password_hash))) {
       return res.status(401).json({ message: 'Invalid admin credentials. Please enter the correct password.' });
     }
 
@@ -1167,43 +1231,56 @@ app.post('/api/auth/admin-login', async (req, res) => {
 // ----------------- HOME DASHBOARD -----------------
 app.get('/api/home', auth, async (req, res) => {
   try {
-    const [[wallet]] = await pool.execute('SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id=?', [req.user.id]);
-    const [[userRow]] = await pool.execute('SELECT full_name, referral_code FROM users WHERE id=?', [req.user.id]);
-    const planObj = await getActivePlan(pool, req.user.id);
-    const [[todayTasks]] = await pool.execute(`
-      SELECT 
-        COUNT(*) as tasks_total,
-        SUM(status = 'completed') as tasks_completed,
-        COALESCE(SUM(CASE WHEN status = 'completed' THEN reward ELSE 0 END), 0) as today_earned
-      FROM user_task_assignments uta
-      JOIN daily_tasks dt ON dt.id = uta.daily_task_id
-      WHERE uta.user_id = ? AND dt.task_date = CURDATE()
-    `, [req.user.id]);
+    const [
+      [[wallet]],
+      [[userRow]],
+      planObj,
+      [[todayTasks]],
+      [[monthlyEarned]],
+      [[teamEarned]],
+      [[teamRow]],
+      [activities]
+    ] = await Promise.all([
+      pool.execute('SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id=?', [req.user.id]),
+      pool.execute('SELECT full_name, referral_code FROM users WHERE id=?', [req.user.id]),
+      getActivePlan(pool, req.user.id),
+      pool.execute(`
+        SELECT 
+          COUNT(*) as tasks_total,
+          SUM(status = 'completed') as tasks_completed,
+          COALESCE(SUM(CASE WHEN status = 'completed' THEN reward ELSE 0 END), 0) as today_earned
+        FROM user_task_assignments uta
+        JOIN daily_tasks dt ON dt.id = uta.daily_task_id
+        WHERE uta.user_id = ? AND dt.task_date = CURDATE()
+      `, [req.user.id]),
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) as monthly_earned
+        FROM wallet_transactions
+        WHERE user_id = ? AND direction = 'credit' AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())
+      `, [req.user.id]),
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) as team_earned
+        FROM team_reward_ledger
+        WHERE user_id = ?
+      `, [req.user.id]),
+      pool.execute('SELECT COUNT(*) AS total_members FROM users WHERE referred_by=?', [req.user.id]),
+      pool.execute(`
+        SELECT id, action, entity_type, created_at
+        FROM audit_logs
+        WHERE user_id = ?
+        ORDER BY id DESC LIMIT 10
+      `, [req.user.id])
+    ]);
 
-    const [[monthlyEarned]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) as monthly_earned
-      FROM wallet_transactions
-      WHERE user_id = ? AND direction = 'credit' AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())
-    `, [req.user.id]);
-
-    const [[teamEarned]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) as team_earned
-      FROM team_reward_ledger
-      WHERE user_id = ?
-    `, [req.user.id]);
-    const [[teamRow]] = await pool.execute('SELECT COUNT(*) AS total_members FROM users WHERE referred_by=?', [req.user.id]);
-
-    const [activities] = await pool.execute(`
-      SELECT id, action, entity_type, created_at
-      FROM audit_logs
-      WHERE user_id = ?
-      ORDER BY id DESC LIMIT 10
-    `, [req.user.id]);
+    const personalBal = Number(wallet?.available_balance || 0);
+    const commBal = Number(wallet?.commission_balance || 0);
+    const totalBal = personalBal + commBal;
 
     const walletObj = {
-      available_balance: Number(wallet?.available_balance || 0),
-      personal_balance: Number(wallet?.available_balance || 0),
-      commission_balance: Number(wallet?.commission_balance || 0),
+      available_balance: totalBal,
+      total_balance: totalBal,
+      personal_balance: personalBal,
+      commission_balance: commBal,
       pending_balance: Number(wallet?.pending_balance || 0),
       lifetime_earned: Number(wallet?.lifetime_earned || 0)
     };
@@ -1214,6 +1291,9 @@ app.get('/api/home', auth, async (req, res) => {
     res.json({
       wallet: walletObj,
       available_balance: walletObj.available_balance,
+      personal_balance: personalBal,
+      commission_balance: commBal,
+      total_balance: totalBal,
       summary: {
         available_balance: walletObj.available_balance,
         today_earned: Number(todayTasks?.today_earned || 0),
@@ -1248,107 +1328,123 @@ app.get('/api/user/earnings-summary', auth, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 1. Today's earnings
-    const [[todayRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM wallet_transactions
-      WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward') AND DATE(created_at) = CURDATE()
-    `, [userId]);
-
-    // 2. Yesterday's earnings
-    const [[yesterdayRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM wallet_transactions
-      WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward') AND DATE(created_at) = CURDATE() - INTERVAL 1 DAY
-    `, [userId]);
-
-    // 3. This Week's earnings (Current Week / Last 7 days)
-    const [[weekRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM wallet_transactions
-      WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward')
-        AND (YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) OR created_at >= CURDATE() - INTERVAL 7 DAY)
-    `, [userId]);
-
-    // 4. This Month's earnings
-    const [[monthRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM wallet_transactions
-      WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward')
-        AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())
-    `, [userId]);
-
-    // 5. Total lifetime earnings & wallet
-    const [[walletRow]] = await pool.execute(`SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id = ?`, [userId]);
-
-    // 6. Team task commission (Task commission from team members)
-    const [[teamCommRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM team_reward_ledger
-      WHERE user_id = ? AND reference_type = 'task_reward'
-    `, [userId]);
-
-    // 7. Referral Rewards (Deposit/plan activation referral rewards)
-    const [[referralRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM team_reward_ledger
-      WHERE user_id = ? AND reference_type = 'plan_activation'
-    `, [userId]);
-
-    // 8. Total Task Earnings (Task reward payouts credited)
-    const [[taskEarnRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(amount), 0) AS val
-      FROM wallet_transactions
-      WHERE user_id = ? AND direction = 'credit' AND type = 'task_reward'
-    `, [userId]);
-
-    // 9. Total Spin Earnings (Lucky wheel cash prizes)
-    const [[spinEarnRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(reward), 0) AS val
-      FROM lucky_wheel_spins
-      WHERE user_id = ?
-    `, [userId]);
-
-    // 10. Total Check-in Earnings (Daily check-in streak rewards)
-    const [[checkinRow]] = await pool.execute(`
-      SELECT COALESCE(SUM(reward), 0) AS val
-      FROM daily_checkins
-      WHERE user_id = ?
-    `, [userId]);
-
-    // 11. Task Counts for today
-    const planObj = await getActivePlan(pool, userId);
-    const [[taskStats]] = await pool.execute(`
-      SELECT 
-        COUNT(*) as total,
-        SUM(status = 'completed') as completed
-      FROM user_task_assignments uta
-      JOIN daily_tasks dt ON dt.id = uta.daily_task_id
-      WHERE uta.user_id = ? AND dt.task_date = CURDATE()
-    `, [userId]);
+    const [
+      [[todayRow]],
+      [[yesterdayRow]],
+      [[weekRow]],
+      [[monthRow]],
+      [[walletRow]],
+      [[teamCommRow]],
+      [[referralRow]],
+      [[taskEarnRow]],
+      [[spinEarnRow]],
+      [[checkinRow]],
+      planObj,
+      [[taskStats]]
+    ] = await Promise.all([
+      // 1. Today's earnings
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM wallet_transactions
+        WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward', 'daily_checkin') AND DATE(created_at) = CURDATE()
+      `, [userId]),
+      // 2. Yesterday's earnings
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM wallet_transactions
+        WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward', 'daily_checkin') AND DATE(created_at) = CURDATE() - INTERVAL 1 DAY
+      `, [userId]),
+      // 3. This Week's earnings (Current Week / Last 7 days)
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM wallet_transactions
+        WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward', 'daily_checkin')
+          AND (YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) OR created_at >= CURDATE() - INTERVAL 7 DAY)
+      `, [userId]),
+      // 4. This Month's earnings
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM wallet_transactions
+        WHERE user_id = ? AND direction = 'credit' AND type IN ('task_reward', 'commission', 'team_commission', 'bonus', 'spin_reward', 'daily_checkin')
+          AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())
+      `, [userId]),
+      // 5. Total lifetime earnings & wallet
+      pool.execute(`SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id = ?`, [userId]),
+      // 6. Team task commission (Task commission from team members)
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM team_reward_ledger
+        WHERE user_id = ? AND reference_type = 'task_reward'
+      `, [userId]),
+      // 7. Referral Rewards (Deposit/plan activation referral rewards)
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM team_reward_ledger
+        WHERE user_id = ? AND reference_type = 'plan_activation'
+      `, [userId]),
+      // 8. Total Task Earnings (Task reward payouts credited)
+      pool.execute(`
+        SELECT COALESCE(SUM(amount), 0) AS val
+        FROM wallet_transactions
+        WHERE user_id = ? AND direction = 'credit' AND type = 'task_reward'
+      `, [userId]),
+      // 9. Total Spin Earnings (Lucky wheel cash prizes)
+      pool.execute(`
+        SELECT COALESCE(SUM(reward), 0) AS val
+        FROM lucky_wheel_spins
+        WHERE user_id = ?
+      `, [userId]),
+      // 10. Total Check-in Earnings (Daily check-in streak rewards)
+      pool.execute(`
+        SELECT COALESCE(SUM(reward), 0) AS val
+        FROM daily_checkins
+        WHERE user_id = ?
+      `, [userId]),
+      // 11. Task Counts for today
+      getActivePlan(pool, userId),
+      pool.execute(`
+        SELECT 
+          COUNT(*) as total,
+          SUM(status = 'completed') as completed
+        FROM user_task_assignments uta
+        JOIN daily_tasks dt ON dt.id = uta.daily_task_id
+        WHERE uta.user_id = ? AND dt.task_date = CURDATE()
+      `, [userId])
+    ]);
 
     const taskTotal = Number(taskStats?.total || planObj?.daily_task_count || 2);
     const taskCompleted = Number(taskStats?.completed || 0);
 
-    const lifetimeEarned = Number(walletRow?.lifetime_earned || 0);
+    const taskEarnings = Number(taskEarnRow?.val || 0);
+    const spinEarnings = Number(spinEarnRow?.val || 0);
+    const checkinEarnings = Number(checkinRow?.val || 0);
+    const teamCommission = Number(teamCommRow?.val || 0);
+    const referralRewards = Number(referralRow?.val || 0);
+    const calculatedTotal = taskEarnings + spinEarnings + checkinEarnings + teamCommission + referralRewards;
+
+    const rawLifetime = Number(walletRow?.lifetime_earned || 0);
+    // Use calculated real activity earnings so dummy seeded values never distort earnings
+    const finalTotalEarned = calculatedTotal > 0 ? calculatedTotal : (rawLifetime < 10000 ? rawLifetime : 0);
+
+    const todayEarned = Number(todayRow?.val || 0);
+    const yesterdayEarned = Number(yesterdayRow?.val || 0);
     const weekVal = Number(weekRow?.val || 0);
     const monthVal = Number(monthRow?.val || 0);
 
-    // Safeguard: week_earned and month_earned should never be 0 if lifetime_earned is positive and was earned recently
-    const safeMonth = monthVal > 0 ? monthVal : lifetimeEarned;
-    const safeWeek = weekVal > 0 ? weekVal : (lifetimeEarned > 0 ? Math.min(lifetimeEarned, safeMonth) : 0);
+    const safeMonth = monthVal > 0 ? monthVal : finalTotalEarned;
+    const safeWeek = weekVal > 0 ? weekVal : (finalTotalEarned > 0 ? Math.min(finalTotalEarned, safeMonth) : 0);
 
     res.json({
-      today_earned: Number(todayRow?.val || 0),
-      yesterday_earned: Number(yesterdayRow?.val || 0),
+      today_earned: todayEarned,
+      yesterday_earned: yesterdayEarned,
       week_earned: safeWeek,
       monthly_earned: safeMonth,
-      total_earned: lifetimeEarned,
-      task_earnings: Number(taskEarnRow?.val || 0),
-      spin_earnings: Number(spinEarnRow?.val || 0),
-      checkin_earnings: Number(checkinRow?.val || 0),
-      team_commission: Number(teamCommRow?.val || 0),
-      referral_rewards: Number(referralRow?.val || 0),
+      total_earned: finalTotalEarned,
+      task_earnings: taskEarnings,
+      spin_earnings: spinEarnings,
+      checkin_earnings: checkinEarnings,
+      team_commission: teamCommission,
+      referral_rewards: referralRewards,
       completed_tasks: taskCompleted,
       remaining_tasks: Math.max(0, taskTotal - taskCompleted),
       personal_balance: Number(walletRow?.available_balance || 0),
@@ -1362,10 +1458,16 @@ app.get('/api/user/earnings-summary', auth, async (req, res) => {
 
 // ----------------- PROFILE & SETTINGS -----------------
 app.get('/api/profile', auth, async (req, res) => {
-  const [[u]] = await pool.execute(`SELECT id, full_name, email, phone, avatar_url, referral_code, status, role FROM users WHERE id=?`, [req.user.id]);
-  if (!u) return res.status(404).json({ message: 'User not found' });
-  const [[p]] = await pool.execute(`SELECT p.name AS plan_name, p.code AS plan_code FROM user_plans up JOIN plans p ON p.id=up.plan_id WHERE up.user_id=? AND up.status='active' LIMIT 1`, [req.user.id]);
-  res.json({ ...u, name: u.full_name, plan_name: p?.plan_name || 'No Active Plan', plan_code: p?.plan_code || null });
+  try {
+    const [[[u]], [[p]]] = await Promise.all([
+      pool.execute(`SELECT id, full_name, email, phone, avatar_url, referral_code, status, role FROM users WHERE id=?`, [req.user.id]),
+      pool.execute(`SELECT p.name AS plan_name, p.code AS plan_code FROM user_plans up JOIN plans p ON p.id=up.plan_id WHERE up.user_id=? AND up.status='active' LIMIT 1`, [req.user.id])
+    ]);
+    if (!u) return res.status(404).json({ message: 'User not found' });
+    res.json({ ...u, name: u.full_name, plan_name: p?.plan_name || 'No Active Plan', plan_code: p?.plan_code || null });
+  } catch (e) {
+    res.status(500).json({ message: 'Failed to fetch profile' });
+  }
 });
 
 app.put('/api/profile', auth, async (req, res) => {
@@ -1612,15 +1714,41 @@ app.put('/api/settings/:key', auth, async (req, res) => {
 
 // ----------------- PLANS -----------------
 app.get('/api/plans', auth, async (req, res) => {
-  const [plans] = await pool.execute(`SELECT id, code, name, job_bond, daily_task_count, unit_reward, daily_max_reward, monthly_max_reward, annual_max_reward, is_locked, active FROM plans WHERE active=1 ORDER BY id`);
-  const [[activePlan]] = await pool.execute(`SELECT p.id, p.code, p.name, p.job_bond, p.daily_task_count, p.unit_reward, p.daily_max_reward, p.monthly_max_reward, p.annual_max_reward, up.started_at, up.expires_at FROM user_plans up JOIN plans p ON p.id=up.plan_id WHERE up.user_id=? AND up.status='active' LIMIT 1`, [req.user.id]);
-  const [[wallet]] = await pool.execute(`SELECT available_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id=?`, [req.user.id]);
-  const walletObj = {
-    available_balance: Number(wallet?.available_balance || 0),
-    pending_balance: Number(wallet?.pending_balance || 0),
-    lifetime_earned: Number(wallet?.lifetime_earned || 0)
-  };
-  res.json({ plans, activePlan: activePlan || null, wallet: walletObj, available_balance: walletObj.available_balance });
+  try {
+    const [plansResult, [[activePlan]], [[wallet]]] = await Promise.all([
+      pool.execute(`SELECT id, code, name, job_bond, daily_task_count, unit_reward, daily_max_reward, monthly_max_reward, annual_max_reward, is_locked, active FROM plans WHERE active=1 ORDER BY id`).catch(() => 
+        pool.execute(`SELECT id, code, name, job_bond, daily_task_count, unit_reward, daily_max_reward, monthly_max_reward, annual_max_reward, 0 AS is_locked, active FROM plans WHERE active=1 ORDER BY id`)
+      ),
+      pool.execute(`SELECT p.id, p.code, p.name, p.job_bond, p.daily_task_count, p.unit_reward, p.daily_max_reward, p.monthly_max_reward, p.annual_max_reward, up.started_at, up.expires_at FROM user_plans up JOIN plans p ON p.id=up.plan_id WHERE up.user_id=? AND up.status='active' LIMIT 1`, [req.user.id]),
+      pool.execute(`SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id=?`, [req.user.id])
+    ]);
+
+    const plans = plansResult[0] || [];
+    const personalBal = Number(wallet?.available_balance || 0);
+    const commBal = Number(wallet?.commission_balance || 0);
+    const totalBal = personalBal + commBal;
+
+    const walletObj = {
+      available_balance: totalBal,
+      total_balance: totalBal,
+      personal_balance: personalBal,
+      commission_balance: commBal,
+      pending_balance: Number(wallet?.pending_balance || 0),
+      lifetime_earned: Number(wallet?.lifetime_earned || 0)
+    };
+    res.json({
+      plans,
+      activePlan: activePlan || null,
+      wallet: walletObj,
+      available_balance: totalBal,
+      personal_balance: personalBal,
+      commission_balance: commBal,
+      total_balance: totalBal
+    });
+  } catch (err) {
+    console.error('Error fetching plans:', err);
+    res.status(500).json({ message: 'Failed to load plans.' });
+  }
 });
 
 app.post('/api/plans/activate', auth, async (req, res) => {
@@ -1646,27 +1774,41 @@ app.post('/api/plans/activate', auth, async (req, res) => {
       await conn.rollback();
       return res.json({ ok: true, message: `${code} is already your active plan.` });
     }
-    const [[wallet]] = await conn.execute(`SELECT id, available_balance FROM wallets WHERE user_id=? FOR UPDATE`, [req.user.id]);
+    const [[wallet]] = await conn.execute(`SELECT id, available_balance, commission_balance FROM wallets WHERE user_id=? FOR UPDATE`, [req.user.id]);
     if (!wallet) {
       await conn.rollback();
       return res.status(404).json({ message: 'Wallet not found.' });
     }
     const cost = Number(p.job_bond);
-    const balance = Number(wallet.available_balance);
-    if (balance < cost) {
+    const personalBal = Number(wallet.available_balance || 0);
+    const commBal = Number(wallet.commission_balance || 0);
+    const totalSpendable = personalBal + commBal;
+
+    if (totalSpendable < cost) {
       await conn.rollback();
-      return res.status(400).json({ message: `Insufficient wallet balance. ${code} requires Rs. ${fmtMoney(cost)}.` });
+      return res.status(400).json({ message: `Insufficient wallet balance. ${code} requires Rs. ${fmtMoney(cost)}. Your balance is Rs. ${fmtMoney(totalSpendable)}.` });
     }
     if (current) {
       await conn.execute(`UPDATE user_plans SET status='cancelled', expires_at=NOW() WHERE id=?`, [current.id]);
     }
-    const newBalance = balance - cost;
-    await conn.execute(`UPDATE wallets SET available_balance=? WHERE id=?`, [newBalance, wallet.id]);
+
+    let newPersonalBal = personalBal;
+    let newCommBal = commBal;
+    if (personalBal >= cost) {
+      newPersonalBal = personalBal - cost;
+      await conn.execute(`UPDATE wallets SET available_balance=? WHERE id=?`, [newPersonalBal, wallet.id]);
+    } else {
+      const remainder = cost - personalBal;
+      newPersonalBal = 0;
+      newCommBal = commBal - remainder;
+      await conn.execute(`UPDATE wallets SET available_balance=0, commission_balance=? WHERE id=?`, [newCommBal, wallet.id]);
+    }
+
     const [up] = await conn.execute(`INSERT INTO user_plans(user_id, plan_id, status) VALUES(?,?,'active')`, [req.user.id, p.id]);
     await conn.execute(
       `INSERT INTO wallet_transactions(wallet_id, user_id, type, direction, amount, reference_type, reference_id, balance_after, note)
        VALUES(?,?, 'adjustment','debit',?,'plan_activation',?,?,?)`,
-      [wallet.id, req.user.id, cost, up.insertId, newBalance, `Activated ${p.code} plan`]
+      [wallet.id, req.user.id, cost, up.insertId, newPersonalBal + newCommBal, `Activated ${p.code} plan`]
     );
     await conn.execute(
       `INSERT INTO audit_logs(user_id, action, entity_type, entity_id, metadata)
@@ -1705,11 +1847,21 @@ app.post('/api/plans/activate', auth, async (req, res) => {
       await conn.execute(`UPDATE users SET referral_code=? WHERE id=?`, [assignedCode, req.user.id]);
     }
 
-    await conn.commit();
-    res.json({ ok: true, message: `${p.code} activated successfully.`, balance: newBalance, plan: { code: p.code }, referralCode: assignedCode });
+    const finalTotalBalance = newPersonalBal + newCommBal;
+    res.json({
+      ok: true,
+      message: `${p.code} activated successfully.`,
+      balance: finalTotalBalance,
+      total_balance: finalTotalBalance,
+      personal_balance: newPersonalBal,
+      commission_balance: newCommBal,
+      plan: { code: p.code, name: p.name },
+      referralCode: assignedCode
+    });
   } catch (e) {
     await conn.rollback();
-    res.status(500).json({ message: 'Plan activation failed.' });
+    console.error('Plan activation error:', e);
+    res.status(500).json({ message: 'Plan activation failed: ' + (e?.message || 'internal error') });
   } finally {
     conn.release();
   }
@@ -2009,9 +2161,10 @@ app.post('/api/tasks/:assignmentId/complete', auth, async (req, res) => {
     await creditTeamCommissions(conn, req.user.id, task.reward, 'task_reward', task.id, 'Task submission reward');
 
     await conn.commit();
-    res.json({ ok: true, reward: Number(task.reward), balance: newBalance });
+    res.json({ ok: true, reward: Number(task.reward), balance: returnBal });
   } catch (e) {
     await conn.rollback();
+    console.error('Task submit error:', e);
     res.status(500).json({ message: 'Could not complete task' });
   } finally {
     conn.release();
@@ -2211,18 +2364,26 @@ app.post('/api/admin/team-levels', auth, adminOnly, async (req, res) => {
 // ----------------- WALLET & TRANSACTIONS -----------------
 app.get('/api/wallet', auth, async (req, res) => {
   try {
-    const [[w]] = await pool.execute('SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id=?', [req.user.id]);
-    const [transactions] = await pool.execute(`
-      SELECT id, type, direction, amount, balance_after, note, DATE_FORMAT(created_at, '%d %b %Y • %h:%i %p') AS created_at
-      FROM wallet_transactions
-      WHERE user_id = ?
-      ORDER BY id DESC LIMIT 50
-    `, [req.user.id]);
+    const [[[w]], [transactions]] = await Promise.all([
+      pool.execute('SELECT available_balance, commission_balance, pending_balance, lifetime_earned FROM wallets WHERE user_id=?', [req.user.id]),
+      pool.execute(`
+        SELECT id, type, direction, amount, balance_after, note, note AS description,
+               DATE_FORMAT(created_at, '%d %b %Y • %h:%i %p') AS created_at
+        FROM wallet_transactions
+        WHERE user_id = ?
+        ORDER BY id DESC LIMIT 50
+      `, [req.user.id])
+    ]);
+
+    const personalBal = Number(w?.available_balance || 0);
+    const commBal = Number(w?.commission_balance || 0);
+    const totalBal = personalBal + commBal;
 
     const walletObj = {
-      available_balance: Number(w?.available_balance || 0),
-      personal_balance: Number(w?.available_balance || 0),
-      commission_balance: Number(w?.commission_balance || 0),
+      available_balance: totalBal,
+      total_balance: totalBal,
+      personal_balance: personalBal,
+      commission_balance: commBal,
       pending_balance: Number(w?.pending_balance || 0),
       lifetime_earned: Number(w?.lifetime_earned || 0)
     };
@@ -2233,7 +2394,7 @@ app.get('/api/wallet', auth, async (req, res) => {
       transactions
     });
   } catch {
-    const fallback = { available_balance: 0, personal_balance: 0, commission_balance: 0, pending_balance: 0, lifetime_earned: 0 };
+    const fallback = { available_balance: 0, total_balance: 0, personal_balance: 0, commission_balance: 0, pending_balance: 0, lifetime_earned: 0 };
     res.json({ ...fallback, wallet: fallback, transactions: [] });
   }
 });
@@ -2775,10 +2936,19 @@ app.get('/api/admin/overview', auth, adminOnly, async (_req, res) => {
       try { await pool.execute(`ALTER TABLE support_inquiries ADD COLUMN attachment_url LONGTEXT NULL DEFAULT NULL`); } catch {}
 
       const [rows] = await pool.execute(`
-        SELECT si.*, si.attachment_url AS attachmentUrl, u.full_name AS userName, u.email AS userEmail, u.phone AS userPhone,
+        SELECT si.*, si.attachment_url AS attachmentUrl,
+               CASE 
+                 WHEN si.category = 'Guest Chat' THEN COALESCE(NULLIF(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(si.message, '(Contact: ', -1), ')', 1)), ''), 'Guest Visitor')
+                 ELSE COALESCE(u.full_name, 'Guest Visitor')
+               END AS userName,
+               CASE 
+                 WHEN si.category = 'Guest Chat' THEN COALESCE(NULLIF(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(si.message, '(Contact: ', -1), ')', 1)), ''), 'guest@code-clever.space')
+                 ELSE COALESCE(u.email, 'guest@code-clever.space')
+               END AS userEmail,
+               COALESCE(u.phone, 'N/A') AS userPhone,
                DATE_FORMAT(si.created_at, '%d %b %Y • %h:%i %p') AS date
         FROM support_inquiries si
-        JOIN users u ON u.id=si.user_id
+        LEFT JOIN users u ON u.id=si.user_id
         ORDER BY si.id DESC LIMIT 100
       `);
       inqs = rows;
@@ -2851,7 +3021,7 @@ app.get('/api/admin/overview', auth, adminOnly, async (_req, res) => {
   }
 });
 
-// Support Inquiries Endpoints (Max 4 per day per user + Screenshot attachment)
+// Support Inquiries Endpoints (Max 1 per 24 hours per user + Screenshot attachment)
 app.get('/api/support/inquiries', auth, async (req, res) => {
   try {
     const [rows] = await pool.execute(`
@@ -2863,18 +3033,18 @@ app.get('/api/support/inquiries', auth, async (req, res) => {
 
     const [[cntRow]] = await pool.execute(`
       SELECT COUNT(*) AS c FROM support_inquiries
-      WHERE user_id = ? AND category != 'Password Reset' AND created_at >= CURDATE()
+      WHERE user_id = ? AND category != 'Password Reset' AND created_at >= NOW() - INTERVAL 24 HOUR
     `, [req.user.id]);
     const dailyUsed = Number(cntRow?.c || 0);
 
     res.json({
       list: rows,
       dailyUsed,
-      dailyLimit: 4,
-      remaining: Math.max(0, 4 - dailyUsed)
+      dailyLimit: 1,
+      remaining: Math.max(0, 1 - dailyUsed)
     });
   } catch {
-    res.json({ list: [], dailyUsed: 0, dailyLimit: 4, remaining: 4 });
+    res.json({ list: [], dailyUsed: 0, dailyLimit: 1, remaining: 1 });
   }
 });
 

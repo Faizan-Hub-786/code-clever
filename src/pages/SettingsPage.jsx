@@ -34,33 +34,41 @@ import {
 import Shell from '../components/layout/Shell';
 import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { fmt } from '../utils/formatters';
+import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
 export default function SettingsPage() {
   const nav = useNavigate();
-  const [profile, setProfile] = useState({
-    name: 'Code Clever User',
-    phone: '+92300******',
-    email: 'user@example.com',
-    id: '684AF603',
-    referral_code: 'CCFA93BC2',
-    avatar_url: '/assets/Characters/Male.jpg'
+  const [profile, setProfile] = useState(() => {
+    const cached = getCachedWallet();
+    return {
+      name: cached.user_name || 'Code Clever User',
+      phone: '+92300******',
+      rawPhone: '',
+      email: 'user@example.com',
+      id: 'CC684AF6',
+      referral_code: cached.referral_code || 'CCFA93BC2',
+      avatar_url: '/assets/Characters/Male.jpg'
+    };
   });
 
-  const [stats, setStats] = useState({
-    yesterday_earned: 0,
-    today_earned: 0,
-    total_earned: 0,
-    week_earned: 0,
-    completed_tasks: 0,
-    remaining_tasks: 0,
-    monthly_earned: 0,
-    task_earnings: 0,
-    spin_earnings: 0,
-    checkin_earnings: 0,
-    personal_balance: 0,
-    commission_balance: 0,
-    team_commission: 0,
-    referral_rewards: 0
+  const [stats, setStats] = useState(() => {
+    const cached = getCachedWallet();
+    return {
+      yesterday_earned: 0,
+      today_earned: cached.today_earned || 0,
+      total_earned: cached.lifetime_earned || cached.total_balance || 0,
+      week_earned: cached.week_earned || 0,
+      completed_tasks: cached.tasks_completed || 0,
+      remaining_tasks: cached.tasks_remaining || 2,
+      monthly_earned: cached.monthly_earned || 0,
+      task_earnings: 0,
+      spin_earnings: 0,
+      checkin_earnings: 0,
+      personal_balance: cached.personal_balance || 0,
+      commission_balance: cached.commission_balance || 0,
+      team_commission: 0,
+      referral_rewards: 0
+    };
   });
 
   const [copied, setCopied] = useState(false);
@@ -130,35 +138,34 @@ export default function SettingsPage() {
             team_commission: Number(d.team_commission || 0),
             referral_rewards: Number(d.referral_rewards || 0)
           });
+          setCachedWallet({
+            today_earned: Number(d.today_earned || 0),
+            lifetime_earned: Number(d.total_earned || 0),
+            personal_balance: Number(d.personal_balance || 0),
+            commission_balance: Number(d.commission_balance || 0),
+            total_balance: Number(d.personal_balance || 0) + Number(d.commission_balance || 0),
+            tasks_completed: Number(d.completed_tasks || 0),
+            tasks_remaining: Number(d.remaining_tasks || 0)
+          });
         }
       })
-      .catch(() => {
-        // Fallback to /home if needed
-        fetch(`${API_BASE_URL}/home`, { headers: getAuthHeaders() })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (d) {
-              const completed = d.task_progress?.completed || 0;
-              const total = d.task_progress?.total || d.plan?.daily_task_count || 2;
-              const todayEarn = Number(d.summary?.today_earned || 0);
-              const lifetimeEarn = Number(d.wallet?.lifetime_earned || d.wallet?.available_balance || 0);
-              const monthEarn = Number(d.summary?.monthly_earned || lifetimeEarn);
+      .catch(() => {});
 
-              setStats({
-                yesterday_earned: 0,
-                today_earned: todayEarn,
-                total_earned: lifetimeEarn,
-                week_earned: monthEarn,
-                completed_tasks: completed,
-                remaining_tasks: Math.max(0, total - completed),
-                monthly_earned: monthEarn,
-                team_commission: Number(d.team?.lifetime_commission || 0),
-                referral_rewards: 0
-              });
-            }
-          })
-          .catch(() => {});
-      });
+    const handleWalletUpdate = (e) => {
+      const u = e.detail;
+      if (!u) return;
+      setStats((prev) => ({
+        ...prev,
+        personal_balance: u.personal_balance ?? prev.personal_balance,
+        commission_balance: u.commission_balance ?? prev.commission_balance,
+        total_earned: u.lifetime_earned ?? prev.total_earned,
+        today_earned: u.today_earned ?? prev.today_earned,
+        completed_tasks: u.tasks_completed ?? prev.completed_tasks,
+        remaining_tasks: u.tasks_remaining ?? prev.remaining_tasks
+      }));
+    };
+    window.addEventListener('cc_wallet_updated', handleWalletUpdate);
+    return () => window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
   }, []);
 
   const maskPhone = (phone) => {

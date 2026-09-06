@@ -327,22 +327,22 @@ export default function AdminUsers({ users = [], onAction }) {
               </button>
             </div>
 
-            <div className="user-modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: '#0a0618', padding: '16px', borderRadius: '16px', border: '1px solid #302048', marginBottom: '18px' }}>
+            <div className="user-modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1.5px solid #e2e8f0', marginBottom: '18px' }}>
               <div>
-                <span style={{ fontSize: '11px', color: '#8f87a1' }}>Email Address</span>
-                <strong style={{ color: '#fff', fontSize: '13.5px', display: 'block' }}>{detail.user.email}</strong>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Email Address</span>
+                <strong style={{ color: '#0f172a', fontSize: '14px', fontWeight: 800, display: 'block' }}>{detail.user.email}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '11px', color: '#8f87a1' }}>Role & Status</span>
-                <strong style={{ color: '#fff', fontSize: '13.5px', display: 'block' }}>{detail.user.role.toUpperCase()} • {detail.user.status}</strong>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Role & Status</span>
+                <strong style={{ color: '#0f172a', fontSize: '14px', fontWeight: 800, display: 'block' }}>{detail.user.role.toUpperCase()} • {detail.user.status}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '11px', color: '#8f87a1' }}>Available Balance</span>
-                <strong style={{ color: '#4ade80', fontSize: '16px', display: 'block' }}>Rs. {fmt(detail.wallet?.available_balance || 0)}</strong>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Available Balance</span>
+                <strong style={{ color: '#059669', fontSize: '16px', fontWeight: 900, display: 'block' }}>Rs. {fmt(detail.wallet?.available_balance || 0)}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '11px', color: '#8f87a1' }}>Lifetime Earned</span>
-                <strong style={{ color: '#df65ff', fontSize: '16px', display: 'block' }}>Rs. {fmt(detail.wallet?.lifetime_earned || 0)}</strong>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Lifetime Earned</span>
+                <strong style={{ color: '#2563eb', fontSize: '16px', fontWeight: 900, display: 'block' }}>Rs. {fmt(detail.wallet?.lifetime_earned || 0)}</strong>
               </div>
             </div>
 
@@ -373,8 +373,8 @@ export default function AdminUsers({ users = [], onAction }) {
 
             {/* Action Form 1: Reset Login Password */}
             {actionType === 'password' && (
-              <form onSubmit={handleResetPassword} style={{ background: 'rgba(120,40,180,.08)', border: '1px solid #5a248f', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
-                <label className="field-label" style={{ fontSize: '11px', color: '#cb4eff', fontWeight: 800, display: 'block', marginBottom: '6px' }}>
+              <form onSubmit={handleResetPassword} style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
+                <label className="field-label" style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, display: 'block', marginBottom: '6px' }}>
                   Set New Login Password
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -384,7 +384,7 @@ export default function AdminUsers({ users = [], onAction }) {
                     placeholder="Enter new secure password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    style={{ flex: 1, background: '#090714', border: '1px solid #4a2870', borderRadius: '10px', color: '#fff', padding: '10px 14px' }}
+                    style={{ flex: 1, background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: '10px', color: '#0f172a', padding: '10px 14px' }}
                   />
                   <button type="submit" className="gradient-btn" disabled={processing} style={{ height: '42px' }}>
                     Save Password
@@ -395,8 +395,8 @@ export default function AdminUsers({ users = [], onAction }) {
 
             {/* Action Form 2: Reset Fund Password */}
             {actionType === 'fund_password' && (
-              <form onSubmit={handleResetFundPassword} style={{ background: 'rgba(120,40,180,.08)', border: '1px solid #5a248f', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
-                <label className="field-label" style={{ fontSize: '11px', color: '#cb4eff', fontWeight: 800, display: 'block', marginBottom: '6px' }}>
+              <form onSubmit={handleResetFundPassword} style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
+                <label className="field-label" style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, display: 'block', marginBottom: '6px' }}>
                   Set New 6-Digit Fund Password
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -407,7 +407,7 @@ export default function AdminUsers({ users = [], onAction }) {
                     placeholder="e.g. 123456"
                     value={newFundPassword}
                     onChange={(e) => setNewFundPassword(e.target.value)}
-                    style={{ flex: 1, background: '#090714', border: '1px solid #4a2870', borderRadius: '10px', color: '#fff', padding: '10px 14px', letterSpacing: '3px' }}
+                    style={{ flex: 1, background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: '10px', color: '#0f172a', padding: '10px 14px', letterSpacing: '3px' }}
                   />
                   <button type="submit" className="gradient-btn" disabled={processing} style={{ height: '42px' }}>
                     Save Fund PIN
@@ -418,15 +418,15 @@ export default function AdminUsers({ users = [], onAction }) {
 
             {/* Action Form 3: Adjust Wallet Balance */}
             {actionType === 'balance' && (
-              <form onSubmit={handleAdjustBalance} style={{ background: 'rgba(120,40,180,.08)', border: '1px solid #5a248f', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
-                <label className="field-label" style={{ fontSize: '11px', color: '#cb4eff', fontWeight: 800, display: 'block', marginBottom: '6px' }}>
+              <form onSubmit={handleAdjustBalance} style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
+                <label className="field-label" style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, display: 'block', marginBottom: '6px' }}>
                   Adjust User Wallet Balance (PKR)
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '8px', marginBottom: '8px' }}>
                   <select
                     value={adjType}
                     onChange={(e) => setAdjType(e.target.value)}
-                    style={{ background: '#090714', border: '1px solid #4a2870', borderRadius: '10px', color: '#fff', padding: '10px' }}
+                    style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: '10px', color: '#0f172a', padding: '10px' }}
                   >
                     <option value="credit">+ Credit</option>
                     <option value="debit">- Debit</option>
@@ -438,7 +438,7 @@ export default function AdminUsers({ users = [], onAction }) {
                     placeholder="Amount in PKR"
                     value={adjAmount}
                     onChange={(e) => setAdjAmount(e.target.value)}
-                    style={{ background: '#090714', border: '1px solid #4a2870', borderRadius: '10px', color: '#fff', padding: '10px 14px' }}
+                    style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: '10px', color: '#0f172a', padding: '10px 14px' }}
                   />
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -447,7 +447,7 @@ export default function AdminUsers({ users = [], onAction }) {
                     placeholder="Reason / Transaction note"
                     value={adjNote}
                     onChange={(e) => setAdjNote(e.target.value)}
-                    style={{ flex: 1, background: '#090714', border: '1px solid #4a2870', borderRadius: '10px', color: '#fff', padding: '10px 14px' }}
+                    style={{ flex: 1, background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: '10px', color: '#0f172a', padding: '10px 14px' }}
                   />
                   <button type="submit" className="gradient-btn" disabled={processing} style={{ height: '42px' }}>
                     Apply Balance
@@ -457,7 +457,7 @@ export default function AdminUsers({ users = [], onAction }) {
             )}
 
             {/* Bottom Actions: Role Toggle, Status Toggle & Delete Member */}
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', borderTop: '1px solid #302048', paddingTop: '14px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '14px', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 className="outline-btn"
@@ -485,14 +485,14 @@ export default function AdminUsers({ users = [], onAction }) {
                   {detail.user.status === 'active' ? 'Suspend Account' : 'Activate Account'}
                 </button>
 
-                {detail.user.role !== 'admin' && String(detail.user.email || '').toLowerCase() !== 'faizanbarvi786@gmail.com' && (
+                {detail.user.role !== 'admin' && String(detail.user.email || '').toLowerCase() !== 'faizanbarvi786@gmail.com' && String(detail.user.email || '').toLowerCase() !== 'faizan0687@gmail.com' && (
                   <button
                     type="button"
                     className="reject-btn"
                     style={{
-                      background: 'rgba(239, 68, 68, 0.2)',
-                      borderColor: '#ef4444',
-                      color: '#fca5a5',
+                      background: '#fef2f2',
+                      borderColor: '#fca5a5',
+                      color: '#dc2626',
                       padding: '8px 16px'
                     }}
                     onClick={() => {
@@ -517,12 +517,12 @@ export default function AdminUsers({ users = [], onAction }) {
         <div className="add-account-modal-overlay" onClick={() => setDeletingUser(null)} style={{ zIndex: 9999 }}>
           <div
             className="add-account-modal"
-            style={{ maxWidth: '500px', border: '1px solid rgba(239, 68, 68, 0.4)', background: '#120b1f' }}
+            style={{ maxWidth: '500px', border: '1.5px solid #fecaca', background: '#ffffff' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="add-account-head" style={{ borderBottomColor: 'rgba(239,68,68,0.2)' }}>
-              <h3 style={{ color: '#f87171', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ShieldAlert size={22} color="#ef4444" /> Delete & Blacklist Member
+            <div className="add-account-head" style={{ borderBottom: '1px solid #fee2e2' }}>
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ShieldAlert size={22} color="#dc2626" /> Delete & Blacklist Member
               </h3>
               <button type="button" className="modal-close-btn" onClick={() => setDeletingUser(null)}>
                 <X size={18} />
@@ -530,17 +530,17 @@ export default function AdminUsers({ users = [], onAction }) {
             </div>
 
             <div style={{ padding: '16px 0' }}>
-              <p style={{ color: '#e2e8f0', fontSize: '14px', lineHeight: 1.5, marginBottom: '14px' }}>
+              <p style={{ color: '#334155', fontSize: '14px', lineHeight: 1.5, marginBottom: '14px' }}>
                 Are you sure you want to permanently delete <strong>{deletingUser.name}</strong> (<code>{deletingUser.email}</code>)?
               </p>
 
               <div
                 style={{
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  background: '#fef2f2',
+                  border: '1.5px solid #fecaca',
                   padding: '12px 14px',
                   borderRadius: '10px',
-                  color: '#fca5a5',
+                  color: '#991b1b',
                   fontSize: '12.5px',
                   lineHeight: 1.45,
                   display: 'flex',
@@ -548,17 +548,17 @@ export default function AdminUsers({ users = [], onAction }) {
                   alignItems: 'flex-start'
                 }}
               >
-                <AlertTriangle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: 2 }} />
+                <AlertTriangle size={18} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div>
-                  <strong>Permanent Blacklist Enforcement:</strong>
-                  <div style={{ marginTop: 2 }}>
+                  <strong style={{ color: '#991b1b' }}>Permanent Blacklist Enforcement:</strong>
+                  <div style={{ marginTop: 2, color: '#7f1d1d' }}>
                     This will delete all user data, wallet balance, and task history. Their email (<code>{deletingUser.email}</code>) will be permanently blacklisted, strictly preventing them from creating a new account.
                   </div>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #302048', paddingTop: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #fee2e2', paddingTop: '14px' }}>
               <button
                 type="button"
                 className="outline-btn"

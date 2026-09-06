@@ -31,6 +31,7 @@ import Shell from '../components/layout/Shell';
 import Stat from '../components/common/Stat';
 import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { fmt, getAppIconUrl } from '../utils/formatters';
+import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
 const DEFAULT_DEMO_TASKS = [
   {
@@ -71,12 +72,14 @@ const DEFAULT_DEMO_TASKS = [
   }
 ];
 
+let cachedTasksData = null;
+
 export default function TasksPage() {
   const nav = useNavigate();
   const [tab, setTab] = useState('today'); // 'today' | 'completed' | 'library'
-  const [tasks, setTasks] = useState([]);
-  const [summary, setSummary] = useState({ total: 2, completed: 0, earned: 0, maxDaily: 118 });
-  const [plan, setPlan] = useState({
+  const [tasks, setTasks] = useState(() => cachedTasksData?.tasks || DEFAULT_DEMO_TASKS);
+  const [summary, setSummary] = useState(() => cachedTasksData?.summary || { total: 2, completed: 0, earned: 0, maxDaily: 118 });
+  const [plan, setPlan] = useState(() => cachedTasksData?.plan || {
     code: 'INTERN',
     name: 'Internship (3-Day Free Trial)',
     daily_task_count: 2,
@@ -88,10 +91,10 @@ export default function TasksPage() {
     trial_days_left: 3,
     trial_hours_left: 72
   });
-  const [library, setLibrary] = useState([]);
-  const [isLocked, setIsLocked] = useState(false);
-  const [lockedReason, setLockedReason] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [library, setLibrary] = useState(() => cachedTasksData?.library || []);
+  const [isLocked, setIsLocked] = useState(() => Boolean(cachedTasksData?.isLocked));
+  const [lockedReason, setLockedReason] = useState(() => cachedTasksData?.lockedReason || '');
+  const [loading, setLoading] = useState(!cachedTasksData);
   const [message, setMessage] = useState('');
 
   // 5-second automatic evaluation tracking: { [assignmentId]: currentStepNumber (1..5) }
@@ -115,29 +118,45 @@ export default function TasksPage() {
       const r = await fetch(`${API_BASE_URL}/tasks/today`, { headers: getAuthHeaders() });
       if (r.ok) {
         const d = await r.json();
+        let loadedTasks = [];
+        let locked = false;
+        let reason = '';
         if (d.is_locked || d.plan?.is_trial_expired) {
+          locked = true;
+          reason = d.locked_reason || d.plan?.locked_reason || '3-Day Intern Free Trial has ended.';
           setIsLocked(true);
-          setLockedReason(d.locked_reason || d.plan?.locked_reason || '3-Day Intern Free Trial has ended.');
+          setLockedReason(reason);
           setTasks([]);
         } else {
           setIsLocked(false);
           setLockedReason('');
           if (d.tasks?.length) {
+            loadedTasks = d.tasks;
             setTasks(d.tasks);
           } else {
             const unit = Number(d.plan?.unit_reward || 59);
             const limit = Number(d.plan?.daily_task_count || 2);
-            setTasks(DEFAULT_DEMO_TASKS.slice(0, limit).map((t) => ({ ...t, reward: unit })));
+            loadedTasks = DEFAULT_DEMO_TASKS.slice(0, limit).map((t) => ({ ...t, reward: unit }));
+            setTasks(loadedTasks);
           }
         }
         if (d.library?.length) setLibrary(d.library);
         if (d.summary) setSummary(d.summary);
         if (d.plan) setPlan(d.plan);
+
+        cachedTasksData = {
+          tasks: loadedTasks,
+          summary: d.summary || summary,
+          plan: d.plan || plan,
+          library: d.library || library,
+          isLocked: locked,
+          lockedReason: reason
+        };
       } else {
-        setTasks(DEFAULT_DEMO_TASKS);
+        if (!cachedTasksData) setTasks(DEFAULT_DEMO_TASKS);
       }
     } catch {
-      setTasks(DEFAULT_DEMO_TASKS);
+      if (!cachedTasksData) setTasks(DEFAULT_DEMO_TASKS);
     }
     setLoading(false);
   };
@@ -184,6 +203,9 @@ export default function TasksPage() {
           headers: getAuthHeaders({ 'Content-Type': 'application/json' })
         });
         const d = await r.json();
+        if (!r.ok) {
+          throw new Error(d.message || 'Task evaluation could not be verified by server.');
+        }
         const earnedReward = Number(d.reward || t.reward || plan.unit_reward || 59);
 
         // Update local state
@@ -192,27 +214,40 @@ export default function TasksPage() {
             item.assignment_id === id ? { ...item, status: 'completed', completed_at: new Date() } : item
           )
         );
+        const newCompleted = (summary.completed || 0) + 1;
+        const newEarned = (summary.earned || 0) + earnedReward;
         setSummary((prev) => ({
           ...prev,
-          completed: (prev.completed || 0) + 1,
-          earned: (prev.earned || 0) + earnedReward,
-          remaining: Math.max((prev.total || 2) - ((prev.completed || 0) + 1), 0)
+          completed: newCompleted,
+          earned: newEarned,
+          remaining: Math.max((prev.total || 2) - newCompleted, 0)
         }));
 
+        // Immediately update global wallet cache with new balance
+        const isIntern = !plan || plan.is_intern || plan.code === 'INTERN';
+        const curWallet = getCachedWallet();
+        if (isIntern) {
+          const newPersonal = d.balance !== undefined ? Number(d.balance) : (curWallet.personal_balance + earnedReward);
+          setCachedWallet({
+            personal_balance: newPersonal,
+            available_balance: newPersonal,
+            today_earned: newEarned,
+            tasks_completed: newCompleted
+          });
+        } else {
+          const newComm = d.balance !== undefined ? Number(d.balance) : (curWallet.commission_balance + earnedReward);
+          setCachedWallet({
+            commission_balance: newComm,
+            today_earned: newEarned,
+            tasks_completed: newCompleted
+          });
+        }
+
         setMessage(`🎉 Task "${t.title}" verified! Rs. ${fmt(earnedReward)} added to your wallet!`);
-      } catch {
-        // Fallback for offline/demo
-        setTasks((prev) =>
-          prev.map((item) =>
-            item.assignment_id === id ? { ...item, status: 'completed' } : item
-          )
-        );
-        setSummary((prev) => ({
-          ...prev,
-          completed: (prev.completed || 0) + 1,
-          earned: (prev.earned || 0) + Number(t.reward || 59)
-        }));
-        setMessage(`🎉 Task "${t.title}" evaluation completed successfully!`);
+        // Refresh tasks in background to ensure 100% server sync
+        setTimeout(loadTasks, 800);
+      } catch (err) {
+        setMessage(`⚠️ ${err.message || 'Task evaluation failed. Please try again.'}`);
       } finally {
         setActiveEvaluations((prev) => {
           const next = { ...prev };

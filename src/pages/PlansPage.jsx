@@ -32,14 +32,15 @@ import Shell from '../components/layout/Shell';
 import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { DEFAULT_PLANS, PLANS_FALLBACK_OBJECTS } from '../constants/plans';
 import { fmt } from '../utils/formatters';
+import { getCachedWallet, setCachedWallet } from '../utils/walletCache';
 
 export default function PlansPage() {
   const nav = useNavigate();
   const [plans, setPlans] = useState(PLANS_FALLBACK_OBJECTS);
-  const [activePlan, setActivePlan] = useState(null);
-  const [isIntern, setIsIntern] = useState(true);
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [activePlan, setActivePlan] = useState(() => getCachedWallet().plan_code);
+  const [isIntern, setIsIntern] = useState(() => !getCachedWallet().plan_code || getCachedWallet().plan_code === 'INTERN');
+  const [walletBalance, setWalletBalance] = useState(() => getCachedWallet().total_balance);
+  const [loading, setLoading] = useState(false);
   const [buying, setBuying] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -59,7 +60,12 @@ export default function PlansPage() {
           setActivePlan(null);
           setIsIntern(true);
         }
-        setWalletBalance(Number(d.wallet?.available_balance ?? d.available_balance ?? 0));
+        const planBal = Number(d.wallet?.total_balance ?? d.wallet?.available_balance ?? d.total_balance ?? d.available_balance ?? 0);
+        setWalletBalance(planBal);
+        setCachedWallet({
+          total_balance: planBal,
+          plan_code: d.activePlan?.code || null
+        });
       }
     } catch {}
     setLoading(false);
@@ -67,6 +73,17 @@ export default function PlansPage() {
 
   useEffect(() => {
     loadPlans();
+    const handleWalletUpdate = (e) => {
+      const u = e.detail;
+      if (!u) return;
+      if (u.total_balance !== undefined) setWalletBalance(u.total_balance);
+      if (u.plan_code) {
+        setActivePlan(u.plan_code);
+        setIsIntern(u.plan_code === 'INTERN');
+      }
+    };
+    window.addEventListener('cc_wallet_updated', handleWalletUpdate);
+    return () => window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
   }, []);
 
   const selectPlan = (p) => {
@@ -93,6 +110,12 @@ export default function PlansPage() {
       setShowModal(false);
       setMsg(`Congratulations! Plan ${pendingPlan.code} activated successfully.`);
       setPendingPlan(null);
+      setCachedWallet({
+        plan_code: pendingPlan.code,
+        total_balance: d.total_balance ?? d.balance,
+        personal_balance: d.personal_balance,
+        commission_balance: d.commission_balance
+      });
       loadPlans();
     } catch (err) {
       setError(err.message);

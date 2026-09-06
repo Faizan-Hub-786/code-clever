@@ -100,26 +100,26 @@ function LeaderDetailsModal({ leaderId, onClose }) {
   if (!leaderId) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(3,1,10,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
-      <div style={{ background: '#0b061e', border: '1px solid rgba(192,132,252,0.25)', borderRadius: 16, width: '100%', maxWidth: 760, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
+      <div style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: 16, width: '100%', maxWidth: 760, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 60px rgba(15,23,42,0.18)' }}>
         {/* Header */}
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <h2 style={{ margin: 0, fontSize: 20, color: '#f8fafc', fontWeight: 800, letterSpacing: 0.5 }}>
+              <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a', fontWeight: 800, letterSpacing: 0.5 }}>
                 {data?.leader?.fullName?.toUpperCase() || 'LEADER DETAILS'}
               </h2>
-              <span style={{ background: 'rgba(192,132,252,0.15)', color: '#c084fc', border: '1px solid rgba(192,132,252,0.3)', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
+              <span style={{ background: 'rgba(192,132,252,0.15)', color: '#9333ea', border: '1px solid rgba(192,132,252,0.3)', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
                 Leader ID: #{data?.leader?.id || leaderId}
               </span>
             </div>
             {data?.leader && (
-              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>
-                Phone: <span style={{ color: '#cbd5e1' }}>{data.leader.phone}</span> · Registered: <span style={{ color: '#cbd5e1' }}>{new Date(data.leader.createdAt).toLocaleDateString()}</span>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+                Phone: <span style={{ color: '#0f172a', fontWeight: 600 }}>{data.leader.phone}</span> · Registered: <span style={{ color: '#0f172a', fontWeight: 600 }}>{new Date(data.leader.createdAt).toLocaleDateString()}</span>
               </p>
             )}
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#94a3b8', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 8, color: '#64748b', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <X size={16} />
           </button>
         </div>
@@ -170,12 +170,12 @@ function LeaderDetailsModal({ leaderId, onClose }) {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {data.teamA.map(m => (
-                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <span style={{ color: '#4ade80', fontFamily: 'monospace', fontWeight: 700, fontSize: 12 }}>{m.code}</span>
+                              <span style={{ color: '#059669', fontFamily: 'monospace', fontWeight: 700, fontSize: 12 }}>{m.code}</span>
                               <div>
-                                <strong style={{ color: '#f1f5f9', fontSize: 13 }}>{m.fullName}</strong>
-                                <small style={{ display: 'block', color: '#94a3b8', fontSize: 11 }}>ID: {m.id} · {m.phone}</small>
+                                <strong style={{ color: '#0f172a', fontSize: 13 }}>{m.fullName}</strong>
+                                <small style={{ display: 'block', color: '#64748b', fontSize: 11 }}>ID: {m.id} · {m.phone}</small>
                               </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -208,12 +208,12 @@ function LeaderDetailsModal({ leaderId, onClose }) {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {data.teamB.map(m => (
-                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <span style={{ color: '#60a5fa', fontFamily: 'monospace', fontWeight: 700, fontSize: 12 }}>{m.code}</span>
+                              <span style={{ color: '#2563eb', fontFamily: 'monospace', fontWeight: 700, fontSize: 12 }}>{m.code}</span>
                               <div>
-                                <strong style={{ color: '#f1f5f9', fontSize: 13 }}>{m.fullName}</strong>
-                                <small style={{ display: 'block', color: '#94a3b8', fontSize: 11 }}>via {m.sponsorName} · ID: {m.id}</small>
+                                <strong style={{ color: '#0f172a', fontSize: 13 }}>{m.fullName}</strong>
+                                <small style={{ display: 'block', color: '#64748b', fontSize: 11 }}>via {m.sponsorName} · ID: {m.id}</small>
                               </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -246,12 +246,12 @@ function LeaderDetailsModal({ leaderId, onClose }) {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {data.teamC.map(m => (
-                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <span style={{ color: '#f472b6', fontFamily: 'monospace', fontWeight: 700, fontSize: 12 }}>{m.code}</span>
+                              <span style={{ color: '#db2777', fontFamily: 'monospace', fontWeight: 700, fontSize: 12 }}>{m.code}</span>
                               <div>
-                                <strong style={{ color: '#f1f5f9', fontSize: 13 }}>{m.fullName}</strong>
-                                <small style={{ display: 'block', color: '#94a3b8', fontSize: 11 }}>via {m.sponsorName} · ID: {m.id}</small>
+                                <strong style={{ color: '#0f172a', fontSize: 13 }}>{m.fullName}</strong>
+                                <small style={{ display: 'block', color: '#64748b', fontSize: 11 }}>via {m.sponsorName} · ID: {m.id}</small>
                               </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -333,9 +333,9 @@ function LeaderRow({ user, onInspect }) {
       </tr>
       {open && (
         <tr>
-          <td colSpan='5' style={{ padding: '0 0 0 20px', background: '#07031a' }}>
-            <div style={{ borderLeft: '2px solid #4ade8044', paddingLeft: 16, paddingTop: 10, paddingBottom: 10 }}>
-              <div style={{ fontSize: 12, color: '#4ade80', fontWeight: 700, marginBottom: 8 }}>
+          <td colSpan='5' style={{ padding: '0 0 0 20px', background: '#f8fafc' }}>
+            <div style={{ borderLeft: '2px solid #10b981', paddingLeft: 16, paddingTop: 10, paddingBottom: 10 }}>
+              <div style={{ fontSize: 12, color: '#059669', fontWeight: 700, marginBottom: 8 }}>
                 Level A Members under {user.fullName}
               </div>
               {aMembers.length === 0 ? (
@@ -546,10 +546,10 @@ export default function AdminTeam() {
         <div className='wheel-cc-card table-section'>
           <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <form onSubmit={handleSearch} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '0 12px', gap: 8 }}>
-                <Search size={15} color='#94a3b8' />
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '0 12px', gap: 8 }}>
+                <Search size={15} color='#64748b' />
                 <input type='text' placeholder='Search by User ID, Name or Phone...' value={searchInput} onChange={e => setSearchInput(e.target.value)}
-                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#e2e8f0', fontSize: 13, padding: '9px 0' }} />
+                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#0f172a', fontSize: 13, padding: '9px 0' }} />
                 {searchInput && <button type='button' onClick={() => { setSearchInput(''); setSearch(''); loadData(1, '', filter); }}><X size={13} color='#64748b' /></button>}
               </div>
               <button type='submit' className='cc-btn-green' style={{ padding: '0 18px', height: 38 }}>Search</button>
@@ -557,7 +557,7 @@ export default function AdminTeam() {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
               {FILTERS.map(f => (
                 <button key={f.key} onClick={() => handleFilter(f.key)}
-                  style={{ background: filter === f.key ? 'rgba(192,132,252,0.2)' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (filter === f.key ? '#c084fc' : 'rgba(255,255,255,0.1)'), color: filter === f.key ? '#c084fc' : '#94a3b8', borderRadius: 6, padding: '4px 12px', fontSize: 12, cursor: 'pointer' }}>
+                  style={{ background: filter === f.key ? '#eff6ff' : '#ffffff', border: '1px solid ' + (filter === f.key ? '#bfdbfe' : '#e2e8f0'), color: filter === f.key ? '#2563eb' : '#64748b', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                   {f.label}
                 </button>
               ))}

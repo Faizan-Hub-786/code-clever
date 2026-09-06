@@ -18,10 +18,12 @@ import { API_BASE_URL, getAuthHeaders } from '../../api/config';
 import { normalizeImageUrl } from '../../utils/formatters';
 import DualImageUpload from '../common/DualImageUpload';
 
+let cachedBankMethods = null;
+
 export default function AdminBank() {
-  const [loading, setLoading] = useState(true);
+  const [methods, setMethods] = useState(() => cachedBankMethods || []);
+  const [loading, setLoading] = useState(!cachedBankMethods);
   const [savingId, setSavingId] = useState(null);
-  const [methods, setMethods] = useState([]);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
 
@@ -35,7 +37,9 @@ export default function AdminBank() {
       });
       if (res.ok) {
         const data = await res.json();
-        setMethods(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        cachedBankMethods = list;
+        setMethods(list);
       }
     } catch (err) {
       console.error('Failed to load bank methods:', err);

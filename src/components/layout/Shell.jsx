@@ -13,44 +13,87 @@ import {
 import { API_BASE_URL, getAuthHeaders } from '../../api/config';
 import SecurityOnboardingModal from '../common/SecurityOnboardingModal';
 
+let globalShellUser = null;
+let globalShellUnread = 0;
+let lastProfileFetch = 0;
+let lastNotifFetch = 0;
+const PROFILE_TTL = 30000;
+const NOTIF_TTL = 15000;
+
 export default function Shell({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(() => {
+    if (globalShellUser) return globalShellUser;
     try {
       const u = JSON.parse(sessionStorage.getItem('cc_user') || localStorage.getItem('cc_user') || '{}');
-      return { name: u.name || u.full_name || 'Code Clever User', avatar: u.avatar || u.avatar_url || null, role: u.role || 'user' };
+      const parsed = { name: u.name || u.full_name || 'Code Clever User', avatar: u.avatar || u.avatar_url || null, role: u.role || 'user' };
+      globalShellUser = parsed;
+      return parsed;
     } catch {
       return { name: 'Code Clever User', avatar: null, role: 'user' };
     }
   });
-  const [unread, setUnread] = useState(0);
+  const [unread, setUnread] = useState(globalShellUnread);
 
   useEffect(() => {
     const token = sessionStorage.getItem('cc_token') || localStorage.getItem('cc_token');
     if (!token) return;
-    fetch(`${API_BASE_URL}/profile`, { headers: getAuthHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d) {
-          setUser({
-            name: d.full_name || d.name || 'Code Clever User',
-            avatar: d.avatar_url || d.avatar || null,
-            role: d.role || 'user'
-          });
-        }
-      })
-      .catch(() => {});
 
-    fetch(`${API_BASE_URL}/notifications`, { headers: getAuthHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (typeof d?.unreadCount === 'number') {
-          setUnread(d.unreadCount);
-        }
-      })
-      .catch(() => {});
-  }, [location.pathname]);
+    const loadProfile = (force = false) => {
+      const now = Date.now();
+      if (!force && now - lastProfileFetch < PROFILE_TTL && globalShellUser) {
+        setUser(globalShellUser);
+        return;
+      }
+      lastProfileFetch = now;
+      fetch(`${API_BASE_URL}/profile`, { headers: getAuthHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d) {
+            const next = {
+              name: d.full_name || d.name || 'Code Clever User',
+              avatar: d.avatar_url || d.avatar || null,
+              role: d.role || 'user'
+            };
+            globalShellUser = next;
+            setUser(next);
+          }
+        })
+        .catch(() => {});
+    };
+
+    const loadNotifications = (force = false) => {
+      const now = Date.now();
+      if (!force && now - lastNotifFetch < NOTIF_TTL) {
+        setUnread(globalShellUnread);
+        return;
+      }
+      lastNotifFetch = now;
+      fetch(`${API_BASE_URL}/notifications`, { headers: getAuthHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (typeof d?.unreadCount === 'number') {
+            globalShellUnread = d.unreadCount;
+            setUnread(d.unreadCount);
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadProfile();
+    loadNotifications();
+
+    const onProfileUpdate = () => loadProfile(true);
+    const onNotifUpdate = () => loadNotifications(true);
+    window.addEventListener('cc_profile_updated', onProfileUpdate);
+    window.addEventListener('cc_wallet_updated', onNotifUpdate);
+
+    return () => {
+      window.removeEventListener('cc_profile_updated', onProfileUpdate);
+      window.removeEventListener('cc_wallet_updated', onNotifUpdate);
+    };
+  }, []);
 
   const navItems = [
     { path: '/home', label: 'Home', Icon: Home },

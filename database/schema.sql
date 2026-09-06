@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
   status ENUM('active','suspended','pending') NOT NULL DEFAULT 'active',
   last_login_at DATETIME NULL,
   failed_login_attempts INT UNSIGNED NOT NULL DEFAULT 0,
-  locked_until DATETIME NULL,
+  security_question VARCHAR(255) NULL DEFAULT 'What was the name of your first school?',
+  security_answer_hash VARCHAR(255) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_users_referrer FOREIGN KEY (referred_by) REFERENCES users(id) ON DELETE SET NULL
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS plans (
   monthly_max_reward DECIMAL(14,2) NOT NULL,
   annual_max_reward DECIMAL(14,2) NOT NULL,
   active TINYINT(1) NOT NULL DEFAULT 1,
+  is_locked TINYINT(1) NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -310,12 +312,31 @@ VALUES
 (3, 2.00, 1)
 ON DUPLICATE KEY UPDATE percent=VALUES(percent), active=VALUES(active);
 
--- Default Site Settings
-INSERT INTO site_settings (setting_key, value_json)
-VALUES
-('maintenance_mode', 'false'),
-('new_registrations', 'true'),
-('withdrawals_enabled', 'true'),
-('task_assignments_paused', 'false'),
-('lucky_wheel_config', '{"enabled":true,"dailyLimit":1,"controlMode":"probability","forcedSegmentId":null,"maxWinAmount":1000,"segments":[{"id":1,"label":"Rs. 50","reward":50,"weight":30,"color":"#7c3aed"},{"id":2,"label":"Rs. 100","reward":100,"weight":20,"color":"#ec4899"},{"id":3,"label":"Rs. 20","reward":20,"weight":35,"color":"#6366f1"},{"id":4,"label":"Rs. 500","reward":500,"weight":5,"color":"#f59e0b"},{"id":5,"label":"Better Luck Next Time","reward":0,"weight":30,"color":"#334155"},{"id":6,"label":"Rs. 250","reward":250,"weight":10,"color":"#a855f7"},{"id":7,"label":"Rs. 1,000","reward":1000,"weight":2,"color":"#10b981"},{"id":8,"label":"Rs. 10","reward":10,"weight":40,"color":"#06b6d4"}]}')
-ON DUPLICATE KEY UPDATE value_json=VALUES(value_json);
+-- Guest Chat Messages Table
+CREATE TABLE IF NOT EXISTS guest_chat_messages (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  session_token VARCHAR(64) NOT NULL,
+  sender ENUM('user','bot','admin') NOT NULL DEFAULT 'user',
+  message TEXT NOT NULL,
+  user_email VARCHAR(190) NULL,
+  is_pinned TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_gcm_token (session_token),
+  INDEX idx_gcm_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Support Inquiries Table
+CREATE TABLE IF NOT EXISTS support_inquiries (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NULL,
+  category VARCHAR(100) NOT NULL,
+  message TEXT NOT NULL,
+  attachment_url LONGTEXT NULL,
+  status ENUM('pending','replied','closed') NOT NULL DEFAULT 'pending',
+  admin_reply TEXT NULL,
+  replied_by BIGINT UNSIGNED NULL,
+  replied_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_si_user (user_id),
+  INDEX idx_si_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

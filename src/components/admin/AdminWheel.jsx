@@ -20,30 +20,32 @@ import {
 import { API_BASE_URL, getAuthHeaders } from '../../api/config';
 import { fmt } from '../../utils/formatters';
 
+let cachedWheelData = null;
+
 export default function AdminWheel() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedWheelData);
   const [savingGlobal, setSavingGlobal] = useState(false);
   const [granting, setGranting] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
 
   // Global Wheel Configuration State
-  const [prizeSegmentsRaw, setPrizeSegmentsRaw] = useState('50, 100, 200, 300, 450, 500, 550, 600, 650, 700');
-  const [defaultWinAmount, setDefaultWinAmount] = useState('100');
-  const [depositAutoWinPrize, setDepositAutoWinPrize] = useState('200');
-  const [autoRechargeSpin, setAutoRechargeSpin] = useState(true);
+  const [prizeSegmentsRaw, setPrizeSegmentsRaw] = useState(() => cachedWheelData?.config?.prizeSegmentsRaw || '50, 100, 200, 300, 450, 500, 550, 600, 650, 700');
+  const [defaultWinAmount, setDefaultWinAmount] = useState(() => String(cachedWheelData?.config?.defaultWinAmount || '100'));
+  const [depositAutoWinPrize, setDepositAutoWinPrize] = useState(() => String(cachedWheelData?.config?.depositAutoWinPrize || '200'));
+  const [autoRechargeSpin, setAutoRechargeSpin] = useState(() => cachedWheelData?.config?.autoRechargeSpin !== false);
 
   // User Assignment State
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState(() => cachedWheelData?.users || []);
   const [userSearchText, setUserSearchText] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [assignSpinCount, setAssignSpinCount] = useState('1');
   const [assignGuaranteedPrize, setAssignGuaranteedPrize] = useState('100');
 
   // Tables State
-  const [allocations, setAllocations] = useState([]);
+  const [allocations, setAllocations] = useState(() => cachedWheelData?.allocations || []);
   const [allocationFilter, setAllocationFilter] = useState('');
-  const [recentSpins, setRecentSpins] = useState([]);
+  const [recentSpins, setRecentSpins] = useState(() => cachedWheelData?.recentSpins || []);
 
   // Parse segments array for dropdown options
   const parsedSegments = useMemo(() => {
@@ -83,6 +85,7 @@ export default function AdminWheel() {
       });
       if (res.ok) {
         const data = await res.json();
+        cachedWheelData = data;
         if (data.config) {
           setPrizeSegmentsRaw(data.config.prizeSegmentsRaw || '50, 100, 200, 300, 450, 500, 550, 600, 650, 700');
           setDefaultWinAmount(String(data.config.defaultWinAmount || '100'));

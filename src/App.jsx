@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Protected from './components/auth/Protected';
 import AdminOnly from './components/auth/AdminOnly';
@@ -6,41 +6,33 @@ import ScrollToTop from './components/layout/ScrollToTop';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 
-// Route-level Code Splitting for optimal initial bundle & fast FCP/LCP
-const HomePage = lazy(() => import('./pages/HomePage'));
-const AuthPage = lazy(() => import('./pages/AuthPage'));
-const TasksPage = lazy(() => import('./pages/TasksPage'));
-const PlansPage = lazy(() => import('./pages/PlansPage'));
-const TeamPage = lazy(() => import('./pages/TeamPage'));
-const WalletPage = lazy(() => import('./pages/WalletPage'));
-const DepositPage = lazy(() => import('./pages/DepositPage'));
-const WithdrawPage = lazy(() => import('./pages/WithdrawPage'));
-const LuckyWheelPage = lazy(() => import('./pages/LuckyWheelPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const SecurityPage = lazy(() => import('./pages/SecurityPage'));
-const GenericSettingsPage = lazy(() => import('./pages/GenericSettingsPage'));
-const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
-const NewsPage = lazy(() => import('./pages/NewsPage'));
-const CheckinPage = lazy(() => import('./pages/CheckinPage'));
-const SupportPage = lazy(() => import('./pages/SupportPage'));
-const LogoutPage = lazy(() => import('./pages/LogoutPage'));
-const AdminPage = lazy(() => import('./pages/AdminPage'));
-
-const PageFallback = () => (
-  <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
-    <div style={{ width: 28, height: 28, border: '3px solid rgba(203,78,255,0.2)', borderTopColor: '#ce2bff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-  </div>
-);
+import HomePage from './pages/HomePage';
+import AuthPage from './pages/AuthPage';
+import TasksPage from './pages/TasksPage';
+import PlansPage from './pages/PlansPage';
+import TeamPage from './pages/TeamPage';
+import WalletPage from './pages/WalletPage';
+import DepositPage from './pages/DepositPage';
+import WithdrawPage from './pages/WithdrawPage';
+import LuckyWheelPage from './pages/LuckyWheelPage';
+import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
+import SecurityPage from './pages/SecurityPage';
+import GenericSettingsPage from './pages/GenericSettingsPage';
+import NotificationsPage from './pages/NotificationsPage';
+import NewsPage from './pages/NewsPage';
+import CheckinPage from './pages/CheckinPage';
+import SupportPage from './pages/SupportPage';
+import LogoutPage from './pages/LogoutPage';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
     <ErrorBoundary>
       <ScrollToTop />
       <PWAInstallPrompt />
-      <Suspense fallback={<PageFallback />}>
-        <Routes>
-          <Route path="/login" element={<AuthPage mode="login" />} />
+      <Routes>
+        <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/signup" element={<AuthPage mode="signup" />} />
 
           <Route path="/" element={<Protected><HomePage /></Protected>} />
@@ -84,7 +76,6 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Suspense>
     </ErrorBoundary>
   );
 }

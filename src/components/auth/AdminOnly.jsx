@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldAlert,
-  ShieldCheck,
   Lock,
   Mail,
   KeyRound,
@@ -24,17 +22,16 @@ export default function AdminOnly({ children }) {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Check if currently authenticated user is the designated master admin
+  // Check if currently authenticated user is authorized admin
   const checkCurrentAdmin = () => {
     const token = sessionStorage.getItem('cc_token') || localStorage.getItem('cc_token');
     const raw = sessionStorage.getItem('cc_user') || localStorage.getItem('cc_user');
     if (!token || !raw) return false;
     try {
       const u = JSON.parse(raw);
-      return (
-        String(u?.email || '').trim().toLowerCase() === 'faizanbarvi786@gmail.com' &&
-        u?.role === 'admin'
-      );
+      const cleanEmail = String(u?.email || '').trim().toLowerCase();
+      const allowed = ['faizan0687@gmail.com', 'faizanbarvi786@gmail.com'];
+      return u?.role === 'admin' || allowed.includes(cleanEmail);
     } catch {
       return false;
     }
@@ -75,7 +72,7 @@ export default function AdminOnly({ children }) {
         throw new Error(data.message || 'Administrator authentication failed.');
       }
 
-      // Save admin credentials in sessionStorage
+      // Save admin credentials
       sessionStorage.setItem('cc_token', data.token);
       sessionStorage.setItem('cc_user', JSON.stringify(data.user));
       localStorage.removeItem('cc_token');
@@ -84,7 +81,7 @@ export default function AdminOnly({ children }) {
       setSuccessMsg('Authentication verified. Loading Admin Hub...');
       setTimeout(() => {
         setIsAdminUnlocked(true);
-      }, 500);
+      }, 300);
     } catch (err) {
       setError(err.message || 'Invalid administrator credentials. Access restricted.');
     } finally {
@@ -98,12 +95,7 @@ export default function AdminOnly({ children }) {
 
   return (
     <div className="admin-auth-overlay">
-      <motion.div
-        className="admin-auth-card"
-        initial={{ opacity: 0, scale: 0.94, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
-      >
+      <div className="admin-auth-card">
         <div className="admin-auth-icon">
           <ShieldAlert size={42} />
         </div>
@@ -117,31 +109,19 @@ export default function AdminOnly({ children }) {
           This system is strictly reserved for authorized platform management. Authenticate with your administrator credentials to proceed.
         </p>
 
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              className="admin-auth-alert error"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <AlertTriangle size={18} />
-              <span>{error}</span>
-            </motion.div>
-          )}
+        {error && (
+          <div className="admin-auth-alert error">
+            <AlertTriangle size={18} />
+            <span>{error}</span>
+          </div>
+        )}
 
-          {successMsg && (
-            <motion.div
-              className="admin-auth-alert success"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <CheckCircle2 size={18} />
-              <span>{successMsg}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {successMsg && (
+          <div className="admin-auth-alert success">
+            <CheckCircle2 size={18} />
+            <span>{successMsg}</span>
+          </div>
+        )}
 
         <form onSubmit={handleAdminLogin} className="admin-auth-form">
           <div className="admin-input-group">
@@ -207,7 +187,7 @@ export default function AdminOnly({ children }) {
             <ArrowLeft size={16} /> Back to User Dashboard
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

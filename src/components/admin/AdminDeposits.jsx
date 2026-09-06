@@ -184,10 +184,10 @@ export default function AdminDeposits({ queue, onAction }) {
                       </td>
                       <td>
                         <div className="user-cell">
-                          <strong style={{ color: '#c084fc' }}>{d.plan_name || 'Recharge'}</strong>
+                          <strong style={{ color: '#2563eb' }}>{d.plan_name || 'Recharge'}</strong>
                           <small>{d.method ? `${d.method} • ` : ''}TID {d.tx_id || '—'}</small>
                           {(d.sender_name || d.sender_number) && (
-                            <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                            <div style={{ fontSize: '11px', color: '#0284c7', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                               <span>👤 <b>{d.sender_name || '—'}</b></span>
                               <span style={{ color: '#94a3b8' }}>•</span>
                               <span>📞 <b>{d.sender_number || '—'}</b></span>
@@ -196,7 +196,7 @@ export default function AdminDeposits({ queue, onAction }) {
                         </div>
                       </td>
                       <td>
-                        <strong className="cash-won-text">
+                        <strong className="cash-won-text" style={{ color: '#059669', fontSize: 14, fontWeight: 800 }}>
                           Rs. {fmt(d.amount)}
                         </strong>
                       </td>

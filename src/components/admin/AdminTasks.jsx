@@ -33,9 +33,11 @@ const CATEGORIES = [
   'Streaming'
 ];
 
+let cachedAdminTasks = null;
+
 export default function AdminTasks({ library: initialLibrary, onAction }) {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState(() => cachedAdminTasks || initialLibrary || []);
+  const [loading, setLoading] = useState(!cachedAdminTasks && (!initialLibrary || !initialLibrary.length));
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -64,7 +66,9 @@ export default function AdminTasks({ library: initialLibrary, onAction }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setTasks(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        cachedAdminTasks = list;
+        setTasks(list);
       }
     } catch (err) {
       console.error('Failed to fetch task library:', err);

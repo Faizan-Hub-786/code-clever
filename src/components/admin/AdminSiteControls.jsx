@@ -283,8 +283,8 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
 
         <div
           style={{
-            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(18, 11, 31, 0.9) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: '#fff1f2',
+            border: '1.5px solid #fecdd3',
             borderRadius: 16,
             padding: '20px 24px',
             display: 'flex',
@@ -295,12 +295,12 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
           }}
         >
           <div style={{ maxWidth: 650 }}>
-            <h3 style={{ margin: '0 0 6px', color: '#fff', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Trash2 size={18} color="#ef4444" /> Reset Database Dataset (Keep Master Admin Only)
+            <h3 style={{ margin: '0 0 6px', color: '#991b1b', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}>
+              <Trash2 size={18} color="#dc2626" /> Reset Database Dataset (Keep Master Admin Only)
             </h3>
-            <p style={{ margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 }}>
+            <p style={{ margin: 0, color: '#475569', fontSize: 13, lineHeight: 1.55 }}>
               Purges all registered member accounts, deposits, withdrawals, wallet transactions, task assignments, referral downlines, and support tickets.
-              The <b>Master Admin account (<code style={{ color: '#facc15' }}>faizanbarvi786@gmail.com</code>)</b>, default earning plans (C1–C9), task library, and site settings are <b>permanently preserved</b>.
+              The <b>Master Admin account (<code style={{ color: '#059669', fontWeight: 700 }}>faizan0687@gmail.com</code>)</b>, default earning plans (C1–C9), task library, and site settings are <b>permanently preserved</b>.
             </p>
           </div>
 
@@ -312,7 +312,7 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
                 setConfirmText('');
               }}
               style={{
-                background: '#ef4444',
+                background: '#dc2626',
                 color: '#fff',
                 border: 'none',
                 padding: '12px 22px',
@@ -323,7 +323,7 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                boxShadow: '0 4px 14px rgba(239, 68, 68, 0.35)',
+                boxShadow: '0 4px 14px rgba(220, 38, 38, 0.25)',
                 transition: 'all 0.2s ease'
               }}
             >
@@ -336,10 +336,10 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
       {/* Confirmation Modal */}
       {showResetModal && (
         <div className="add-account-modal-overlay" onClick={() => !resetting && setShowResetModal(false)}>
-          <div className="add-account-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500, border: '1px solid rgba(239, 68, 68, 0.5)' }}>
-            <div className="add-account-head">
-              <h3 style={{ color: '#f87171', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <AlertTriangle size={20} color="#f87171" /> Confirm Complete Dataset Reset
+          <div className="add-account-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500, border: '1.5px solid #fecaca', background: '#ffffff' }}>
+            <div className="add-account-head" style={{ borderBottom: '1px solid #fee2e2' }}>
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <AlertTriangle size={20} color="#dc2626" /> Confirm Complete Dataset Reset
               </h3>
               <button
                 type="button"
@@ -351,28 +351,28 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
               </button>
             </div>
 
-            <div style={{ background: '#0a0618', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
-              <p style={{ color: '#fff', margin: '0 0 10px', fontSize: '13px', lineHeight: '1.5', fontWeight: 600 }}>
+            <div style={{ background: '#fef2f2', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1.5px solid #fecaca' }}>
+              <p style={{ color: '#991b1b', margin: '0 0 10px', fontSize: '13px', lineHeight: '1.5', fontWeight: 700 }}>
                 ⚠️ Warning: This action is permanent and cannot be undone!
               </p>
-              <ul style={{ margin: 0, paddingLeft: 18, color: '#cbd5e1', fontSize: '12.5px', lineHeight: 1.6 }}>
+              <ul style={{ margin: 0, paddingLeft: 18, color: '#334155', fontSize: '12.5px', lineHeight: 1.6 }}>
                 <li>All user accounts (except Master Admin) will be deleted.</li>
                 <li>All deposits, withdrawals, and ledger transactions will be wiped.</li>
                 <li>All referral hierarchy trees and commissions will be cleared.</li>
                 <li>All daily check-ins, tasks, and wheel spins will be reset.</li>
-                <li><b style={{ color: '#4ade80' }}>Master Admin (faizanbarvi786@gmail.com) is 100% safe & preserved.</b></li>
+                <li><b style={{ color: '#059669' }}>Master Admin (faizan0687@gmail.com) is 100% safe & preserved.</b></li>
               </ul>
             </div>
 
             <form onSubmit={handleExecuteReset}>
               <div className="admin-form-group">
-                <label style={{ fontSize: 12.5, color: '#e2e8f0', marginBottom: 6, display: 'block' }}>
-                  To confirm, type <b style={{ color: '#ef4444' }}>RESET</b> in the box below:
+                <label style={{ fontSize: 12.5, color: '#1e293b', marginBottom: 6, display: 'block', fontWeight: 700 }}>
+                  To confirm, type <b style={{ color: '#dc2626' }}>RESET</b> in the box below:
                 </label>
                 <input
                   type="text"
                   className="filter-input"
-                  style={{ width: '100%', padding: '10px 14px', background: '#0e061c', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: 10, color: '#fff', fontWeight: 700, letterSpacing: 1 }}
+                  style={{ width: '100%', padding: '10px 14px', background: '#ffffff', border: '1.5px solid #fca5a5', borderRadius: 10, color: '#0f172a', fontWeight: 700, letterSpacing: 1 }}
                   placeholder="Type RESET"
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
@@ -393,7 +393,7 @@ export default function AdminSiteControls({ settings: initialSettings, onAction 
                 <button
                   type="submit"
                   className="reject-btn"
-                  style={{ background: confirmText.trim().toUpperCase() === 'RESET' ? '#ef4444' : '#555', color: '#fff', borderColor: 'transparent', padding: '10px 20px', fontWeight: 700 }}
+                  style={{ background: confirmText.trim().toUpperCase() === 'RESET' ? '#dc2626' : '#94a3b8', color: '#fff', borderColor: 'transparent', padding: '10px 20px', fontWeight: 700 }}
                   disabled={resetting || confirmText.trim().toUpperCase() !== 'RESET'}
                 >
                   {resetting ? 'Purging Dataset...' : 'Confirm & Wipe Data'}

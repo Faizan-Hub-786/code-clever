@@ -30,28 +30,35 @@ import Shell from '../components/layout/Shell';
 import Stat from '../components/common/Stat';
 import { API_BASE_URL, getAuthHeaders } from '../api/config';
 import { fmt, fmtDate } from '../utils/formatters';
+import { getCachedWallet } from '../utils/walletCache';
+
+let cachedTeamData = null;
 
 export default function TeamPage() {
-  const [team, setTeam] = useState({
-    referral_code: null,
-    total_members: 0,
-    lifetime_commission: 0,
-    level1_count: 0,
-    level1_commission: 0,
-    level2_count: 0,
-    level2_commission: 0,
-    level3_count: 0,
-    level3_commission: 0,
-    can_share_referral: false,
-    require_active_plan_to_refer: true,
-    has_active_paid_plan: false,
-    rates: [
-      { level: 1, name: 'Level A (Direct)', code: 'A', percent: 10, description: 'Direct referrals registered with your code' },
-      { level: 2, name: 'Level B (Tier 2)', code: 'B', percent: 5, description: 'Referrals invited by your Level A members' },
-      { level: 3, name: 'Level C (Tier 3)', code: 'C', percent: 2, description: 'Referrals invited by your Level B members' }
-    ],
-    members: [],
-    recent_commissions: []
+  const [team, setTeam] = useState(() => {
+    if (cachedTeamData) return cachedTeamData;
+    const w = getCachedWallet();
+    return {
+      referral_code: w.referral_code || null,
+      total_members: 0,
+      lifetime_commission: 0,
+      level1_count: 0,
+      level1_commission: 0,
+      level2_count: 0,
+      level2_commission: 0,
+      level3_count: 0,
+      level3_commission: 0,
+      can_share_referral: Boolean(w.referral_code && w.plan_code && w.plan_code !== 'INTERN'),
+      require_active_plan_to_refer: true,
+      has_active_paid_plan: Boolean(w.plan_code && w.plan_code !== 'INTERN'),
+      rates: [
+        { level: 1, name: 'Level A (Direct)', code: 'A', percent: 10, description: 'Direct referrals registered with your code' },
+        { level: 2, name: 'Level B (Tier 2)', code: 'B', percent: 5, description: 'Referrals invited by your Level A members' },
+        { level: 3, name: 'Level C (Tier 3)', code: 'C', percent: 2, description: 'Referrals invited by your Level B members' }
+      ],
+      members: [],
+      recent_commissions: []
+    };
   });
 
   const [activeTab, setActiveTab] = useState('directory'); // 'directory' | 'ledger' | 'rules'
@@ -60,7 +67,7 @@ export default function TeamPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [showQR, setShowQR] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedTeamData);
 
   useEffect(() => {
     const fetchTeam = async () => {
@@ -68,6 +75,7 @@ export default function TeamPage() {
         const r = await fetch(`${API_BASE_URL}/team`, { headers: getAuthHeaders() });
         if (r.ok) {
           const d = await r.json();
+          cachedTeamData = d;
           setTeam(d);
         }
       } catch (err) {

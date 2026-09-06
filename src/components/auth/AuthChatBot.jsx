@@ -378,7 +378,22 @@ export default function AuthChatBot({ onSwitchMode, externalTrigger }) {
     return generated;
   });
 
-  const [messages, setMessages] = useState([]);
+  const createDefaultGreeting = (token) => ({
+    id: 'init-greeting',
+    sender: 'bot',
+    text: `👋 **Hello! Welcome to Code Clever.**\n\nI am your 24/7 AI Assistant. How can I help you today?\n\n📌 **Support & Message Policy (24-Hour Limits):**\n• 💬 **1 Direct Message to Admin** per 24 hours\n• 🔑 **1 Password Reset request** per 24 hours\n• 🤖 **Unlimited 24/7 AI Chat** for instant guidance & plan details\n• 📌 Official Admin replies are **automatically pinned at the top** of this chat within 24 hours.\n\n🎫 Support Ticket: \`${token}\``,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    suggestions: [
+      '🔑 Where do I get an Invitation Code?',
+      '📝 How do I register an account?',
+      '💼 Plans & Daily Earnings',
+      '💳 Deposit & Withdrawal Info',
+      '🔒 Forgot Password Help',
+      '📞 Leave Message for Admin'
+    ]
+  });
+
+  const [messages, setMessages] = useState(() => [createDefaultGreeting(sessionToken)]);
   const [pinnedAdminReply, setPinnedAdminReply] = useState(null);
   const [showPinnedBanner, setShowPinnedBanner] = useState(true);
   const [input, setInput] = useState('');
@@ -447,22 +462,7 @@ export default function AuthChatBot({ onSwitchMode, externalTrigger }) {
             setMessages(history);
           } else {
             // Initialize with default greeting if database is empty
-            setMessages([
-              {
-                id: 'init-greeting',
-                sender: 'bot',
-                text: `👋 **Hello! Welcome to Code Clever.**\n\nI am your 24/7 AI Assistant. How can I help you today?\n\n📌 **Support & Message Policy (24-Hour Limits):**\n• 💬 **1 Direct Message to Admin** per 24 hours\n• 🔑 **1 Password Reset request** per 24 hours\n• 🤖 **Unlimited 24/7 AI Chat** for instant guidance & plan details\n• 📌 Official Admin replies are **automatically pinned at the top** of this chat within 24 hours.\n\n🎫 Support Ticket: \`${sessionToken}\``,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                suggestions: [
-                  '🔑 Where do I get an Invitation Code?',
-                  '📝 How do I register an account?',
-                  '💼 Plans & Daily Earnings',
-                  '💳 Deposit & Withdrawal Info',
-                  '🔒 Forgot Password Help',
-                  '📞 Leave Message for Admin'
-                ]
-              }
-            ]);
+            setMessages([createDefaultGreeting(sessionToken)]);
           }
         }
       }
@@ -471,9 +471,13 @@ export default function AuthChatBot({ onSwitchMode, externalTrigger }) {
 
   useEffect(() => {
     fetchHistory();
-    const interval = setInterval(fetchHistory, 6000); // Check every 6s for admin replies without losing state
+    if (!isOpen) return;
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      fetchHistory();
+    }, 8000);
     return () => clearInterval(interval);
-  }, [sessionToken]);
+  }, [sessionToken, isOpen]);
 
   // Handle external trigger (e.g. from Forgot Password modal)
   useEffect(() => {
@@ -618,6 +622,7 @@ export default function AuthChatBot({ onSwitchMode, externalTrigger }) {
 
     // Determine if this specific message is an explicit message for admin
     const shouldSendToAdmin = forceSendToAdmin || isLeavingAdminMsg || text.startsWith('[ADMIN QUERY]');
+    setIsLeavingAdminMsg(false);
 
     if (shouldSendToAdmin && !canSendAdminTicket) {
       const limitNotice = {
@@ -1201,6 +1206,18 @@ export default function AuthChatBot({ onSwitchMode, externalTrigger }) {
               {!canSendAdminTicket && (
                 <div style={{ fontSize: '10.5px', color: '#facc15', display: 'flex', alignItems: 'center', gap: 5, padding: '2px 4px', fontWeight: 600 }}>
                   <AlertCircle size={12} color="#facc15" /> 1/1 Admin Ticket Sent (Reply will appear pinned above) • AI Chat Active
+                </div>
+              )}
+              {isLeavingAdminMsg && (
+                <div style={{ fontSize: '10.5px', color: '#e879f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 8px', background: 'rgba(206, 43, 255, 0.12)', borderRadius: 8, border: '1px solid rgba(206, 43, 255, 0.3)' }}>
+                  <span>📞 <b>Direct Admin Mode</b> (1 message/24h)</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsLeavingAdminMsg(false)}
+                    style={{ background: 'transparent', border: 'none', color: '#f87171', fontSize: '10.5px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    Cancel & Chat with AI ✕
+                  </button>
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', width: '100%' }}>

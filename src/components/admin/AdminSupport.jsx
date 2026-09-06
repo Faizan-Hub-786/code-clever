@@ -240,7 +240,7 @@ export default function AdminSupport({ inquiries = [], onAction }) {
                     <span className="task-cat-pill">{inq.category}</span>
                   </td>
                   <td style={{ maxWidth: '260px' }}>
-                    <div style={{ fontSize: '12.5px', color: '#ded4eb', lineHeight: '1.4' }}>
+                    <div style={{ fontSize: '12.5px', color: '#0f172a', fontWeight: 600, lineHeight: '1.4' }}>
                       {inq.message}
                     </div>
                   </td>
@@ -396,23 +396,23 @@ export default function AdminSupport({ inquiries = [], onAction }) {
               </button>
             </div>
 
-            <div style={{ background: '#0a0618', padding: '14px', borderRadius: '12px', marginBottom: '16px', border: '1px solid #302048' }}>
-              <div style={{ fontSize: '12px', color: '#8f87a1', marginBottom: '4px' }}>
+            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', marginBottom: '16px', border: '1.5px solid #e2e8f0' }}>
+              <div style={{ fontSize: '12px', color: '#475569', fontWeight: 700, marginBottom: '4px' }}>
                 User Inquiry ({selectedInquiry.category} - {selectedInquiry.userName}):
               </div>
-              <p style={{ color: '#fff', margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
+              <p style={{ color: '#0f172a', margin: 0, fontSize: '13.5px', fontWeight: 600, lineHeight: '1.5' }}>
                 "{selectedInquiry.message}"
               </p>
 
               {(selectedInquiry.attachmentUrl || selectedInquiry.attachment_url) && (
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                  <span style={{ fontSize: '11px', color: '#cb4eff', fontWeight: 700, display: 'block', marginBottom: 6 }}>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
+                  <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 700, display: 'block', marginBottom: 6 }}>
                     Attached Screenshot Proof:
                   </span>
                   <img
                     src={selectedInquiry.attachmentUrl || selectedInquiry.attachment_url}
                     alt="Proof"
-                    style={{ maxHeight: 120, borderRadius: 8, border: '1px solid #a83dff', cursor: 'pointer' }}
+                    style={{ maxHeight: 120, borderRadius: 8, border: '1px solid #bfdbfe', cursor: 'pointer' }}
                     onClick={() => setLightboxImg(selectedInquiry.attachmentUrl || selectedInquiry.attachment_url)}
                   />
                 </div>
@@ -421,7 +421,9 @@ export default function AdminSupport({ inquiries = [], onAction }) {
 
             <form onSubmit={handleSendReply}>
               <div className="admin-form-group">
-                <label>Official Admin Reply to Member (Visible in User Panel & Live Guest Chat):</label>
+                <label style={{ color: '#0f172a', fontWeight: 700, fontSize: '12.5px', display: 'block', marginBottom: '6px' }}>
+                  Official Admin Reply to Member (Visible in User Panel & Live Guest Chat):
+                </label>
                 <textarea
                   className="admin-textarea"
                   rows={4}
@@ -429,7 +431,7 @@ export default function AdminSupport({ inquiries = [], onAction }) {
                   placeholder="Type your response or resolution details for the customer..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', background: '#0e061c', border: '1px solid rgba(203, 78, 255, 0.3)', borderRadius: 10, color: '#fff' }}
+                  style={{ width: '100%', padding: '10px 12px', background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 10, color: '#0f172a', fontSize: '13px', boxSizing: 'border-box' }}
                 />
               </div>
 
@@ -477,10 +479,10 @@ export default function AdminSupport({ inquiries = [], onAction }) {
             <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', display: 'grid', placeItems: 'center', margin: '0 auto 12px' }}>
               <AlertTriangle size={24} />
             </div>
-            <h3 style={{ margin: '0 0 8px', color: '#fff' }}>
+            <h3 style={{ margin: '0 0 8px', color: '#0f172a', fontWeight: 800 }}>
               {confirmDelete.type === 'reply' ? 'Delete Admin Reply?' : 'Delete Support Ticket?'}
             </h3>
-            <p style={{ color: '#cbd5e1', fontSize: '13px', lineHeight: 1.5, margin: '0 0 18px' }}>
+            <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.5, margin: '0 0 18px' }}>
               {confirmDelete.type === 'reply'
                 ? 'This will remove the reply from both the admin dashboard and the live website / guest chat, setting ticket back to pending.'
                 : 'This will permanently delete this support ticket and remove any associated chat messages from the website.'}

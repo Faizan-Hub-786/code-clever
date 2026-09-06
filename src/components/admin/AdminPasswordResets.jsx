@@ -273,7 +273,7 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
                     )}
                   </td>
                   <td style={{ maxWidth: '280px' }}>
-                    <div style={{ fontSize: '12.5px', color: '#ded4eb', lineHeight: '1.4' }}>
+                    <div style={{ fontSize: '12.5px', color: '#0f172a', fontWeight: 600, lineHeight: '1.4' }}>
                       {inq.message}
                     </div>
                   </td>
@@ -391,11 +391,11 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
               </button>
             </div>
 
-            <div style={{ background: '#0a0618', padding: '14px', borderRadius: '12px', marginBottom: '16px', border: '1px solid #302048' }}>
-              <div style={{ fontSize: '12px', color: '#8f87a1', marginBottom: '4px' }}>
+            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', marginBottom: '16px', border: '1.5px solid #e2e8f0' }}>
+              <div style={{ fontSize: '12px', color: '#475569', fontWeight: 700, marginBottom: '4px' }}>
                 Member Request ({selectedInquiry.userName || selectedInquiry.userEmail}):
               </div>
-              <p style={{ color: '#fff', margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
+              <p style={{ color: '#0f172a', margin: 0, fontSize: '13.5px', fontWeight: 600, lineHeight: '1.5' }}>
                 "{selectedInquiry.message}"
               </p>
             </div>
@@ -403,13 +403,13 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
             {/* Quick Template Chips */}
             <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <label style={{ fontSize: '11.5px', color: '#8f87a1', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: '#334155', fontWeight: 700, display: 'block' }}>
                   ⚡ Quick Reply Templates (Auto-Pins in User's Chatbot & Syncs Database):
                 </label>
                 <button
                   type="button"
                   onClick={() => setDynamicPass(generateRandomPassword())}
-                  style={{ background: 'transparent', border: 'none', color: '#cb4eff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}
+                  style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}
                   title="Generate another unique password"
                 >
                   <RefreshCw size={11} /> Roll New
@@ -421,11 +421,11 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
                   type="button"
                   onClick={() => applyTemplate(`Your password reset is approved. Your temporary password is: ${dynamicPass}. Please login and change your password immediately in Settings.`)}
                   style={{
-                    background: 'rgba(203, 78, 255, 0.15)',
-                    border: '1px solid #cb4eff',
-                    color: '#e9d5ff',
+                    background: '#eff6ff',
+                    border: '1.5px solid #bfdbfe',
+                    color: '#1d4ed8',
                     borderRadius: 8,
-                    padding: '6px 10px',
+                    padding: '6px 12px',
                     fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -434,17 +434,17 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
                     gap: 5
                   }}
                 >
-                  <KeyRound size={13} color="#cb4eff" /> Unique Password: {dynamicPass}
+                  <KeyRound size={13} color="#2563eb" /> Unique Password: {dynamicPass}
                 </button>
                 <button
                   type="button"
                   onClick={() => applyTemplate('Your identity and security question have been verified. Your account login access is restored.')}
                   style={{
-                    background: 'rgba(34, 197, 94, 0.15)',
-                    border: '1px solid #22c55e',
-                    color: '#86efac',
+                    background: '#ecfdf5',
+                    border: '1.5px solid #a7f3d0',
+                    color: '#065f46',
                     borderRadius: 8,
-                    padding: '6px 10px',
+                    padding: '6px 12px',
                     fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -460,7 +460,9 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
 
             <form onSubmit={handleSendReply}>
               <div className="admin-form-group">
-                <label>Admin Response Message (Pinned in User's Live Chatbot):</label>
+                <label style={{ color: '#0f172a', fontWeight: 700, fontSize: '12.5px', display: 'block', marginBottom: '6px' }}>
+                  Admin Response Message (Pinned in User's Live Chatbot):
+                </label>
                 <textarea
                   className="admin-textarea"
                   rows={4}
@@ -468,12 +470,12 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
                   placeholder="Enter temporary password or recovery instructions for the user..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', background: '#0e061c', border: '1px solid rgba(203, 78, 255, 0.3)', borderRadius: 10, color: '#fff', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px 12px', background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 10, color: '#0f172a', fontSize: '13px', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 6, fontSize: '11.5px', color: '#86efac' }}>
-                <ShieldCheck size={14} color="#4ade80" />
+              <div style={{ marginTop: '8px', padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 8, fontSize: '12px', color: '#166534', fontWeight: 600 }}>
+                <ShieldCheck size={16} color="#16a34a" />
                 <span>Sending a temporary password will instantly update the user's password in the database so they can log in.</span>
               </div>
 
@@ -521,10 +523,10 @@ export default function AdminPasswordResets({ inquiries = [], onAction }) {
             <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', display: 'grid', placeItems: 'center', margin: '0 auto 12px' }}>
               <AlertTriangle size={24} />
             </div>
-            <h3 style={{ margin: '0 0 8px', color: '#fff' }}>
+            <h3 style={{ margin: '0 0 8px', color: '#0f172a', fontWeight: 800 }}>
               {confirmDelete.type === 'reply' ? 'Delete Admin Reply?' : 'Delete Password Request?'}
             </h3>
-            <p style={{ color: '#cbd5e1', fontSize: '13px', lineHeight: 1.5, margin: '0 0 18px' }}>
+            <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.5, margin: '0 0 18px' }}>
               {confirmDelete.type === 'reply'
                 ? 'This will remove the temporary password reply from both the admin dashboard and the live website / guest chat, setting ticket back to pending.'
                 : 'This will permanently delete this password recovery ticket and remove any associated chat messages from the website.'}

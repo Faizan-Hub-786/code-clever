@@ -1,0 +1,2623 @@
+/* ==========================================================================
+   CODE CLEVER - MODERN SHOPEERS SAAS ADMIN DASHBOARD THEME
+   Hyper-clean, light aesthetic matching reference SaaS mockup.
+   Scoped to .admin-shopeers-root to preserve consumer dark theme.
+   ========================================================================== */
+
+.admin-shopeers-root {
+  min-height: 100vh;
+  background-color: #f6f8fc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   1. COLLAPSIBLE SIDEBAR
+   -------------------------------------------------------------------------- */
+.shopeers-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #eef2f6;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 16px;
+  box-sizing: border-box;
+  z-index: 100;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s ease;
+  overflow-y: auto;
+}
+
+/* Brand Lockup */
+.shopeers-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 12px;
+}
+
+.shopeers-brand-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.shopeers-brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  object-fit: cover;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.16);
+  border: 1px solid #e2e8f0;
+}
+
+.shopeers-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.shopeers-brand-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.shopeers-brand-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563eb;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shopeers-collapse-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.shopeers-collapse-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Nav Section Categories */
+.shopeers-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.shopeers-nav-category {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  margin: 14px 0 4px 12px;
+}
+
+.shopeers-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.shopeers-nav-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.shopeers-nav-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.shopeers-nav-btn.active {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.shopeers-nav-btn.active svg {
+  color: #2563eb;
+}
+
+.shopeers-badge-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.shopeers-badge-pill.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Sidebar Upgrade / Status Card */
+.shopeers-system-card {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  border-radius: 16px;
+  padding: 16px 14px;
+  color: #ffffff;
+  margin-top: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
+}
+
+.shopeers-system-card::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 90px;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.shopeers-system-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.shopeers-system-card-head span {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #93c5fd;
+}
+
+.shopeers-system-card h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.shopeers-system-card p {
+  margin: 0 0 12px;
+  font-size: 11.5px;
+  color: #dbeafe;
+  line-height: 1.4;
+}
+
+.shopeers-system-card-btn {
+  width: 100%;
+  background: #ffffff;
+  color: #1e3a8a;
+  border: none;
+  border-radius: 9px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shopeers-system-card-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   2. MAIN WRAPPER & TOPBAR
+   -------------------------------------------------------------------------- */
+.shopeers-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f6f8fc;
+}
+
+.shopeers-topbar {
+  height: 72px;
+  background: #ffffff;
+  border-bottom: 1px solid #eef2f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  box-sizing: border-box;
+}
+
+.shopeers-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.shopeers-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.shopeers-mobile-toggle:hover {
+  background: #f1f5f9;
+}
+
+.shopeers-search-wrap {
+  position: relative;
+  width: 320px;
+}
+
+.shopeers-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.shopeers-search-input {
+  width: 100%;
+  height: 40px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  padding: 0 46px 0 36px;
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.shopeers-search-input:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+}
+
+.shopeers-search-shortcut {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+
+/* Topbar Right Controls */
+.shopeers-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shopeers-date-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.shopeers-period-select {
+  border: none;
+  background: transparent;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+}
+
+.shopeers-btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shopeers-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.shopeers-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.shopeers-btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.shopeers-icon-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.shopeers-icon-btn:hover {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.shopeers-notif-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 1.5px solid #ffffff;
+}
+
+.shopeers-user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   3. DASHBOARD PAGE CONTENT
+   -------------------------------------------------------------------------- */
+.shopeers-content {
+  padding: 24px 28px 48px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.shopeers-global-msg {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 12px 18px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --------------------------------------------------------------------------
+   4. OVERVIEW: 4 TOP KPI METRIC CARDS
+   -------------------------------------------------------------------------- */
+.shopeers-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.shopeers-kpi-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.shopeers-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+.shopeers-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.shopeers-kpi-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.shopeers-kpi-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shopeers-kpi-icon.blue { background: #eff6ff; color: #2563eb; }
+.shopeers-kpi-icon.purple { background: #f5f3ff; color: #7c3aed; }
+.shopeers-kpi-icon.cyan { background: #ecfeff; color: #0891b2; }
+.shopeers-kpi-icon.emerald { background: #ecfdf5; color: #059669; }
+
+.shopeers-kpi-value {
+  font-size: 27px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.shopeers-kpi-growth {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.shopeers-kpi-growth.up {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.shopeers-kpi-growth.down {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.shopeers-kpi-subtext {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   5. OVERVIEW: MIDDLE DUAL GRID (CHART + WEEKLY BAR GRAPH)
+   -------------------------------------------------------------------------- */
+.shopeers-dual-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.shopeers-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02);
+}
+
+.shopeers-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.shopeers-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.shopeers-card-menu-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+/* Profit Chart Section */
+.shopeers-profit-stat {
+  font-size: 32px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shopeers-chart-wrap {
+  width: 100%;
+  height: 200px;
+  margin: 14px 0;
+  position: relative;
+}
+
+.shopeers-chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.shopeers-chart-tooltip {
+  position: absolute;
+  top: 32px;
+  left: 52%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  font-size: 11.5px;
+  pointer-events: none;
+}
+
+.shopeers-chart-tooltip strong {
+  display: block;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.shopeers-chart-tooltip span {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+/* Customer Segments Row (Bottom of Profit Chart) */
+.shopeers-segments-box {
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.shopeers-segment-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shopeers-segment-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.shopeers-segment-dot.blue { background: #2563eb; }
+.shopeers-segment-dot.emerald { background: #10b981; }
+.shopeers-segment-dot.amber { background: #f59e0b; }
+
+.shopeers-segment-item strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.shopeers-segment-item small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* Weekly Bar Chart (Most Day Active) */
+.shopeers-bars-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 220px;
+  padding-top: 30px;
+  box-sizing: border-box;
+}
+
+.shopeers-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.shopeers-bar-track {
+  width: 24px;
+  height: 160px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+}
+
+.shopeers-bar-fill {
+  width: 100%;
+  border-radius: 6px;
+  background: #cbd5e1;
+  transition: height 0.5s ease;
+}
+
+.shopeers-bar-fill.active {
+  background: #2563eb;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.shopeers-bar-badge {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #2563eb;
+  background: #eff6ff;
+  border-radius: 6px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.shopeers-bar-day {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.shopeers-bar-day.active {
+  color: #2563eb;
+  font-weight: 800;
+}
+
+/* --------------------------------------------------------------------------
+   6. OVERVIEW: BOTTOM ROW (RECENT QUEUES + GAUGES / AI ASSISTANT)
+   -------------------------------------------------------------------------- */
+.shopeers-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Gauge Widget */
+.shopeers-gauge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.shopeers-gauge-arc-wrap {
+  width: 160px;
+  height: 90px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.shopeers-gauge-svg {
+  width: 160px;
+  height: 160px;
+}
+
+.shopeers-gauge-value {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 26px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.shopeers-gauge-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.shopeers-gauge-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shopeers-gauge-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+/* AI Assistant & System Quick Box */
+.shopeers-ai-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.shopeers-ai-sphere {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #60a5fa 0%, #2563eb 55%, #1e3a8a 100%);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.4), inset 0 -4px 8px rgba(0, 0, 0, 0.3);
+  margin: 8px 0 14px;
+  animation: floatSphere 3.5s ease-in-out infinite;
+}
+
+@keyframes floatSphere {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.shopeers-ai-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.shopeers-ai-input {
+  width: 100%;
+  height: 38px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 0 40px 0 34px;
+  font-size: 12px;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.shopeers-ai-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.shopeers-ai-send-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   7. UNIVERSAL CARD & TABLE STYLING FOR ALL SUBCOMPONENTS
+   -------------------------------------------------------------------------- */
+.shopeers-subview-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.shopeers-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.shopeers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.shopeers-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+  padding: 12px 16px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.shopeers-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.shopeers-table tr:hover td {
+  background: #fcfcfd;
+}
+
+.shopeers-table-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.shopeers-table-primary {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.shopeers-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.shopeers-status-pill.success {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.shopeers-status-pill.pending {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.shopeers-status-pill.danger {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.shopeers-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shopeers-action-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Light Mode Overrides for child admin components */
+.admin-shopeers-root .admin-section-head h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.admin-shopeers-root .admin-section-head p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px;
+}
+
+.admin-shopeers-root .records-filter-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.admin-shopeers-root .filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-shopeers-root .filter-item label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.admin-shopeers-root .filter-input,
+.admin-shopeers-root .filter-select {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.admin-shopeers-root .filter-input:focus,
+.admin-shopeers-root .filter-select:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+}
+
+.admin-shopeers-root .filter-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  transition: all 0.15s ease;
+}
+
+.admin-shopeers-root .filter-submit-btn:hover {
+  background: #1d4ed8;
+}
+
+.admin-shopeers-root .filter-reset-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-shopeers-root .filter-reset-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.admin-shopeers-root .wheel-cc-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02);
+}
+
+.admin-shopeers-root .cc-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.admin-shopeers-root .cc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.admin-shopeers-root .cc-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+  padding: 12px 16px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.admin-shopeers-root .cc-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.admin-shopeers-root .cc-table tr:hover td {
+  background: #fcfcfd;
+}
+
+.admin-shopeers-root .cc-btn-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-shopeers-root .cc-btn-green:hover {
+  background: #059669;
+}
+
+.admin-shopeers-root .cc-btn-red {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-shopeers-root .cc-btn-red:hover {
+  background: #dc2626;
+}
+
+.admin-shopeers-root .proof-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-shopeers-root .proof-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Quick Controls Styling */
+.admin-shopeers-root .admin-quick-controls {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02);
+}
+
+.admin-shopeers-root .admin-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.admin-shopeers-root .quick-action-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: all 0.15s ease;
+}
+
+.admin-shopeers-root .quick-action-card:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.admin-shopeers-root .quick-action-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-shopeers-root .quick-action-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-shopeers-root .quick-action-icon-box.purple { background: #f5f3ff; color: #7c3aed; }
+.admin-shopeers-root .quick-action-icon-box.orange { background: #fff7ed; color: #ea580c; }
+.admin-shopeers-root .quick-action-icon-box.red { background: #fef2f2; color: #dc2626; }
+
+.admin-shopeers-root .quick-status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.admin-shopeers-root .quick-status-pill.blue { background: #eff6ff; color: #2563eb; }
+.admin-shopeers-root .quick-status-pill.green { background: #dcfce7; color: #15803d; }
+.admin-shopeers-root .quick-status-pill.red { background: #fee2e2; color: #b91c1c; }
+.admin-shopeers-root .quick-status-pill.yellow { background: #fef9c3; color: #a16207; }
+
+.admin-shopeers-root .quick-action-card b {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.admin-shopeers-root .quick-action-card span {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.admin-shopeers-root .quick-card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.admin-shopeers-root .quick-card-btn.primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.admin-shopeers-root .quick-card-btn.primary:hover {
+  background: #1d4ed8;
+}
+
+.admin-shopeers-root .quick-card-btn.success {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.admin-shopeers-root .quick-card-btn.warning {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.admin-shopeers-root .quick-card-btn.danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* Modals */
+.admin-shopeers-root .admin-proof-modal-overlay,
+.admin-shopeers-root .admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 16px;
+}
+
+.admin-shopeers-root .admin-proof-modal-content,
+.admin-shopeers-root .admin-modal-content {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.admin-shopeers-root .admin-search-box,
+.admin-shopeers-root .admin-filter-bar {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-shopeers-root input,
+.admin-shopeers-root select,
+.admin-shopeers-root textarea {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+
+.admin-shopeers-root input::placeholder,
+.admin-shopeers-root textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* ==========================================================================
+   COMPREHENSIVE HIGH-CONTRAST LIGHT MODE OVERRIDES FOR ALL 13 ADMIN VIEWS
+   Ensures 100% crystal-clear visibility for all text, headings, cards & tables
+   ========================================================================== */
+
+/* Universal text & headings */
+.admin-shopeers-root {
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root h1,
+.admin-shopeers-root h2,
+.admin-shopeers-root h3,
+.admin-shopeers-root h4,
+.admin-shopeers-root h5,
+.admin-shopeers-root h6 {
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root p {
+  color: #334155 !important;
+}
+
+.admin-shopeers-root label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+.admin-shopeers-root small,
+.admin-shopeers-root em {
+  color: #64748b !important;
+}
+
+.admin-shopeers-root strong,
+.admin-shopeers-root b {
+  color: #0f172a !important;
+}
+
+/* Tables across Users, Deposits, Withdrawals, Support, Tasks, Resets */
+.admin-shopeers-root .admin-table-wrap,
+.admin-shopeers-root .cc-table-container,
+.admin-shopeers-root .shopeers-table-wrap {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .admin-table,
+.admin-shopeers-root .cc-table,
+.admin-shopeers-root .shopeers-table {
+  background: #ffffff !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.admin-shopeers-root .admin-table th,
+.admin-shopeers-root .cc-table th,
+.admin-shopeers-root .shopeers-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 800 !important;
+  font-size: 11.5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1.5px solid #e2e8f0 !important;
+  padding: 12px 16px !important;
+}
+
+.admin-shopeers-root .admin-table td,
+.admin-shopeers-root .cc-table td,
+.admin-shopeers-root .shopeers-table td {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  font-size: 13px !important;
+  padding: 13px 16px !important;
+}
+
+.admin-shopeers-root .admin-table tr:hover td,
+.admin-shopeers-root .cc-table tr:hover td,
+.admin-shopeers-root .shopeers-table tr:hover td {
+  background: #f8fafc !important;
+}
+
+.admin-shopeers-root .admin-table td b,
+.admin-shopeers-root .admin-table td strong,
+.admin-shopeers-root .cc-table td b,
+.admin-shopeers-root .cc-table td strong,
+.admin-shopeers-root .user-cell strong {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .admin-table td small,
+.admin-shopeers-root .cc-table td small,
+.admin-shopeers-root .user-cell small {
+  color: #64748b !important;
+}
+
+/* Action Buttons */
+.admin-shopeers-root .approve-btn,
+.admin-shopeers-root .btn-approve {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1.5px solid #bfdbfe !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .approve-btn:hover,
+.admin-shopeers-root .btn-approve:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.admin-shopeers-root .reject-btn,
+.admin-shopeers-root .btn-reject {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1.5px solid #fecaca !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .reject-btn:hover,
+.admin-shopeers-root .btn-reject:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+/* Status Badges */
+.admin-shopeers-root .status-chip,
+.admin-shopeers-root .status-pill,
+.admin-shopeers-root .shopeers-status-pill {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  padding: 3px 9px !important;
+  border-radius: 99px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.admin-shopeers-root .status-chip.active,
+.admin-shopeers-root .status-chip.approved,
+.admin-shopeers-root .status-chip.paid,
+.admin-shopeers-root .status-chip.success {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.admin-shopeers-root .status-chip.pending,
+.admin-shopeers-root .status-chip.warning {
+  background: #fffbeb !important;
+  color: #d97706 !important;
+  border: 1px solid #fde68a !important;
+}
+
+.admin-shopeers-root .status-chip.banned,
+.admin-shopeers-root .status-chip.rejected,
+.admin-shopeers-root .status-chip.suspended,
+.admin-shopeers-root .status-chip.danger {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+/* All Modals (User Details, Password Resets, Proof Preview, News, Plans) */
+.admin-shopeers-root .add-account-modal,
+.admin-shopeers-root .admin-modal-content,
+.admin-shopeers-root .admin-proof-modal-content,
+.admin-shopeers-root .user-detail-modal {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  padding: 24px !important;
+}
+
+.admin-shopeers-root .add-account-head h3,
+.admin-shopeers-root .admin-modal-content h3 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .modal-close-btn {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+  cursor: pointer !important;
+}
+
+.admin-shopeers-root .modal-close-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root .user-modal-grid {
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+}
+
+.admin-shopeers-root .user-modal-grid span {
+  color: #64748b !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+}
+
+.admin-shopeers-root .user-modal-grid strong {
+  color: #0f172a !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+/* Plan Cards (AdminPlans.jsx) */
+.admin-shopeers-root .admin-plan-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-shopeers-root .plan-kpi-card {
+  background: #ffffff !important;
+  border: 1px solid #eef2f6 !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .plan-kpi-card small {
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.admin-shopeers-root .plan-kpi-card strong {
+  color: #0f172a !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .admin-plan-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.admin-shopeers-root .admin-tier-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .tier-code-badge {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-weight: 900 !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+}
+
+.admin-shopeers-root .tier-code-wrap h4 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  margin: 0;
+}
+
+.admin-shopeers-root .tier-code-wrap small {
+  color: #64748b !important;
+}
+
+.admin-shopeers-root .metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.admin-shopeers-root .metric-row span {
+  color: #64748b !important;
+  font-size: 12.5px !important;
+}
+
+.admin-shopeers-root .metric-row strong {
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .metric-row.highlight {
+  background: #f8fafc !important;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+}
+
+/* Tasks Pool (AdminTasks.jsx) */
+.admin-shopeers-root .task-form-card,
+.admin-shopeers-root .task-pool-card,
+.admin-shopeers-root .task-item-card {
+  background: #ffffff !important;
+  border: 1px solid #eef2f6 !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .card-sub-text {
+  color: #64748b !important;
+  font-size: 12.5px !important;
+}
+
+.admin-shopeers-root .task-filter-toolbar {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+/* Team Hierarchy (AdminTeam.jsx) */
+.admin-shopeers-root .team-kpi-card {
+  background: #ffffff !important;
+  border: 1px solid #eef2f6 !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .team-kpi-card small {
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.admin-shopeers-root .team-kpi-card strong {
+  color: #0f172a !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+}
+
+.admin-shopeers-root .tier-tag.level-b {
+  background: #f5f3ff !important;
+  color: #7c3aed !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+.admin-shopeers-root .tier-tag.level-c {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+/* Bank & Notice Bar */
+.admin-shopeers-root .bank-notice-bar {
+  background: #eff6ff !important;
+  border: 1.5px solid #bfdbfe !important;
+  border-radius: 12px !important;
+  color: #1e40af !important;
+  font-size: 13px !important;
+  padding: 14px 18px !important;
+}
+
+/* Password Reset Card & Details */
+.admin-shopeers-root .request-verified-badge {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+  border-radius: 99px !important;
+  padding: 2px 8px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .admin-msg {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-weight: 600 !important;
+}
+
+/* Global Modal Button Overrides (Light Mode High-Contrast) */
+.admin-shopeers-root .cancel-btn {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 9px 20px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .cancel-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+.admin-shopeers-root .submit-btn {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1px solid #1d4ed8 !important;
+  border-radius: 10px !important;
+  padding: 9px 22px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .submit-btn:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+}
+
+.admin-shopeers-root .submit-btn:disabled {
+  background: #cbd5e1 !important;
+  color: #64748b !important;
+  border-color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+.admin-shopeers-root .outline-btn {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 8px 16px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .outline-btn:hover {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+.admin-shopeers-root .gradient-btn {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 9px 20px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .gradient-btn:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+}
+
+.admin-shopeers-root .reject-btn {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1.5px solid #fecaca !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .reject-btn:hover:not(:disabled) {
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+}
+
+.admin-shopeers-root .approve-btn {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .approve-btn:hover:not(:disabled) {
+  background: #d1fae5 !important;
+}
+
+.admin-shopeers-root .cc-btn-purple {
+  background: #f5f3ff !important;
+  color: #7c3aed !important;
+  border: 1.5px solid #ddd6fe !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shopeers-root .cc-btn-purple:hover {
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+}
+
+/* Universal Inputs & Textareas in Admin Panel */
+.admin-shopeers-root .cc-input,
+.admin-shopeers-root .admin-input-style,
+.admin-shopeers-root .dual-url-input,
+.admin-shopeers-root input[type="text"],
+.admin-shopeers-root input[type="number"],
+.admin-shopeers-root input[type="password"],
+.admin-shopeers-root input[type="email"],
+.admin-shopeers-root input[type="url"],
+.admin-shopeers-root input[type="date"],
+.admin-shopeers-root select {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.admin-shopeers-root .cc-input:focus,
+.admin-shopeers-root .admin-input-style:focus,
+.admin-shopeers-root .dual-url-input:focus,
+.admin-shopeers-root input:focus,
+.admin-shopeers-root select:focus,
+.admin-shopeers-root textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.admin-shopeers-root .cc-textarea,
+.admin-shopeers-root .admin-textarea,
+.admin-shopeers-root textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.admin-shopeers-root label {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+}
+
+/* Proof Modal and Overlays */
+.admin-shopeers-root .proof-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  padding: 16px !important;
+}
+
+.admin-shopeers-root .proof-modal-content {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.2) !important;
+  max-width: 600px !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root .proof-modal-header {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.admin-shopeers-root .proof-modal-header h3 {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root .proof-close-btn {
+  background: #f1f5f9 !important;
+  border: none !important;
+  color: #64748b !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+  cursor: pointer !important;
+}
+
+.admin-shopeers-root .proof-close-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root .proof-pill-btn {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+  border-radius: 7px !important;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .proof-pill-btn:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Bank Method Cards */
+.admin-shopeers-root .bank-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .bank-card-head {
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding-bottom: 14px !important;
+  margin-bottom: 14px !important;
+}
+
+.admin-shopeers-root .bank-title h3 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+}
+
+.admin-shopeers-root .bank-title small {
+  color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+/* Dual Upload Dropzone in Admin */
+.admin-shopeers-root .dual-upload-card,
+.admin-shopeers-root .dual-drop-zone {
+  background: #f8fafc !important;
+  border: 1.5px dashed #cbd5e1 !important;
+  border-radius: 12px !important;
+  color: #475569 !important;
+}
+
+.admin-shopeers-root .dual-drop-zone:hover {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+}
+.shopeers-mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+}
+
+@media (max-width: 1024px) {
+  .shopeers-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .shopeers-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .shopeers-mobile-overlay.mobile-open {
+    display: block;
+  }
+
+  .shopeers-mobile-toggle {
+    display: flex;
+  }
+
+  .shopeers-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shopeers-dual-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shopeers-search-wrap {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shopeers-topbar {
+    padding: 0 16px;
+  }
+
+  .shopeers-date-pill,
+  .shopeers-search-wrap,
+  .shopeers-btn-secondary {
+    display: none;
+  }
+
+  .shopeers-content {
+    padding: 16px 14px 40px;
+  }
+
+  .shopeers-kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .shopeers-profit-stat {
+    font-size: 24px;
+  }
+
+  .shopeers-segments-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* ==========================================================================
+   UNIFIED ADMIN PANEL THEME & LAYOUT ENGINE (ALL 13 SECTIONS)
+   Guarantees 100% identical, hyper-clean light mode aesthetic across every page
+   ========================================================================== */
+
+/* 1. Global Admin Viewport & Main Container */
+.admin-shopeers-root {
+  background-color: #f6f8fc !important;
+  color: #0f172a !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.admin-shopeers-root .shopeers-main {
+  background-color: #f6f8fc !important;
+  min-width: 0 !important;
+}
+
+.admin-shopeers-root .shopeers-content {
+  background-color: #f6f8fc !important;
+  padding: 24px 28px 48px !important;
+  max-width: 1600px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.admin-shopeers-root .shopeers-subview-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 2. Unified Card Surfaces (Replaces all legacy dark gradients across all tabs) */
+.admin-shopeers-root .admin-view,
+.admin-shopeers-root .admin-announcements-page,
+.admin-shopeers-root .admin-announcement-form-card,
+.admin-shopeers-root .admin-announcements-list-card,
+.admin-shopeers-root .bank-method-card,
+.admin-shopeers-root .wheel-control-center-v2,
+.admin-shopeers-root .wheel-cc-card,
+.admin-shopeers-root .task-form-card,
+.admin-shopeers-root .task-pool-card,
+.admin-shopeers-root .team-kpi-card,
+.admin-shopeers-root .commission-rates-box,
+.admin-shopeers-root .records-filter-card,
+.admin-shopeers-root .admin-policy-card,
+.admin-shopeers-root .withdraw-schedule-card,
+.admin-shopeers-root .dual-image-upload-wrap {
+  background: #ffffff !important;
+  border: 1.5px solid #eef2f6 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px rgba(0, 0, 0, 0.02) !important;
+  color: #0f172a !important;
+}
+
+/* 3. Section Headers & Typography Hierarchy */
+.admin-shopeers-root .admin-section-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+  margin-bottom: 22px !important;
+}
+
+.admin-shopeers-root .admin-section-head h2 {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0 0 4px !important;
+  letter-spacing: -0.02em !important;
+}
+
+.admin-shopeers-root .admin-section-head p {
+  font-size: 13px !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.admin-shopeers-root .card-title-wrap h3,
+.admin-shopeers-root .card-header-line h3,
+.admin-shopeers-root .bank-card-title-wrap h3,
+.admin-shopeers-root .wheel-cc-title-row h2,
+.admin-shopeers-root .pool-header-line h3,
+.admin-shopeers-root .policy-title-row h3,
+.admin-shopeers-root .table-title h3,
+.admin-shopeers-root .admin-announcement-form-card h3,
+.admin-shopeers-root .admin-announcements-list-card h3 {
+  color: #0f172a !important;
+  font-size: 15.5px !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.admin-shopeers-root .card-sub-text,
+.admin-shopeers-root .wheel-cc-title-row p,
+.admin-shopeers-root .policy-desc,
+.admin-shopeers-root .field-hint {
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+/* 4. Form Labels, Inputs, Selects & Textareas Across All 13 Pages */
+.admin-shopeers-root .form-group label,
+.admin-shopeers-root .dual-upload-label,
+.admin-shopeers-root .filter-item label,
+.admin-shopeers-root .checkbox-label {
+  color: #334155 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  margin-bottom: 2px !important;
+}
+
+.admin-shopeers-root .checkbox-label b {
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root .cc-input,
+.admin-shopeers-root .cc-select,
+.admin-shopeers-root .cc-textarea,
+.admin-shopeers-root .filter-input,
+.admin-shopeers-root .filter-select,
+.admin-shopeers-root .task-search-input,
+.admin-shopeers-root .table-search-input {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .cc-input:focus,
+.admin-shopeers-root .cc-select:focus,
+.admin-shopeers-root .cc-textarea:focus,
+.admin-shopeers-root .filter-input:focus,
+.admin-shopeers-root .filter-select:focus,
+.admin-shopeers-root .task-search-input:focus,
+.admin-shopeers-root .table-search-input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+  background: #ffffff !important;
+}
+
+.admin-shopeers-root .cc-select option,
+.admin-shopeers-root .filter-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* 5. Announcements & Broadcasts Styling */
+.admin-shopeers-root .admin-announcement-form-card,
+.admin-shopeers-root .admin-announcements-list-card {
+  padding: 22px !important;
+  margin-bottom: 18px !important;
+}
+
+.admin-shopeers-root .cc-btn-purple {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  padding: 6px 12px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .cc-btn-purple:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
+}
+
+/* 6. Dual Upload & Dropzone Surfaces */
+.admin-shopeers-root .dual-image-upload-wrap {
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+}
+
+.admin-shopeers-root .native-file-input {
+  color: #475569 !important;
+  font-size: 12.5px !important;
+}
+
+.admin-shopeers-root .native-file-input::file-selector-button {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  padding: 6px 14px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .native-file-input::file-selector-button:hover {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+.admin-shopeers-root .dual-preview-container {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+}
+
+.admin-shopeers-root .dual-upload-hint {
+  color: #d97706 !important;
+  font-weight: 600 !important;
+}
+
+/* 7. Bank & Recharge Section */
+.admin-shopeers-root .bank-notice-bar {
+  background: #ecfdf5 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  border-radius: 14px !important;
+  color: #065f46 !important;
+  font-weight: 600 !important;
+  padding: 12px 18px !important;
+}
+
+.admin-shopeers-root .bank-card-header {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.admin-shopeers-root .bank-card-logo {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.admin-shopeers-root .bank-card-icon-circle {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+.admin-shopeers-root .bank-status-badge.active {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.admin-shopeers-root .bank-status-badge.inactive {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.admin-shopeers-root .qr-upload-section {
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+}
+
+.admin-shopeers-root .qr-preview-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+}
+
+/* 8. Lucky Wheel Control Center */
+.admin-shopeers-root .card-header-line {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.admin-shopeers-root .wheel-cc-icon-badge {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #2563eb !important;
+}
+
+.admin-shopeers-root .guaranteed-select {
+  background: #ecfdf5 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  color: #065f46 !important;
+  font-weight: 700 !important;
+}
+
+/* 9. Team Hierarchy & Subtables */
+.admin-shopeers-root .tier-card {
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+}
+
+.admin-shopeers-root .tier-pill {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.admin-shopeers-root .downline-subtable-wrap {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+}
+
+.admin-shopeers-root .cc-table.subtable th {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.admin-shopeers-root .cc-table.subtable td {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* 10. Task Library Cards */
+.admin-shopeers-root .task-item-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  color: #0f172a !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-shopeers-root .task-item-card:hover {
+  border-color: #93c5fd !important;
+  background: #f8fafc !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06) !important;
+}
+
+.admin-shopeers-root .task-item-card h4 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .task-item-desc {
+  color: #64748b !important;
+}
+
+.admin-shopeers-root .task-app-logo {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.admin-shopeers-root .task-cancel-edit-btn {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+.admin-shopeers-root .task-cancel-edit-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.admin-shopeers-root .task-edit-icon-btn {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.admin-shopeers-root .task-edit-icon-btn:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.admin-shopeers-root .task-toggle-btn.active {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.admin-shopeers-root .task-toggle-btn.inactive {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.admin-shopeers-root .task-delete-icon-btn {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+/* 11. Records Filter Toolbar */
+.admin-shopeers-root .filter-reset-btn {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+.admin-shopeers-root .filter-reset-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* 12. Site Controls / Killswitches */
+.admin-shopeers-root .policy-icon-box {
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  color: #2563eb !important;
+}
+
+.admin-shopeers-root .policy-toggle-switch-btn.active {
+  background: #fef2f2 !important;
+  border: 1.5px solid #fecaca !important;
+  color: #dc2626 !important;
+}
+
+.admin-shopeers-root .policy-toggle-switch-btn.inactive {
+  background: #ecfdf5 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  color: #059669 !important;
+}
+
+/* 13. All Tables & Table Containers Across the Entire Admin */
+.admin-shopeers-root .admin-table-wrap,
+.admin-shopeers-root .cc-table-container {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-shopeers-root .admin-table th,
+.admin-shopeers-root .cc-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 800 !important;
+  font-size: 11.5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1.5px solid #e2e8f0 !important;
+  padding: 12px 14px !important;
+}
+
+.admin-shopeers-root .admin-table td,
+.admin-shopeers-root .cc-table td {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  font-size: 13px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 13px 14px !important;
+  vertical-align: middle !important;
+}
+
+.admin-shopeers-root .admin-table tr:hover td,
+.admin-shopeers-root .cc-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+.admin-shopeers-root .user-cell strong {
+  color: #0f172a !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+}
+
+.admin-shopeers-root .user-cell small {
+  color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+/* 14. Responsive Layout Harmonization (PC, Tablet, Mobile) */
+@media (max-width: 1024px) {
+  .admin-shopeers-root .shopeers-content {
+    padding: 18px 20px 40px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-shopeers-root .shopeers-content {
+    padding: 14px 12px 36px !important;
+  }
+  .admin-shopeers-root .admin-announcement-form-card,
+  .admin-shopeers-root .admin-announcements-list-card,
+  .admin-shopeers-root .bank-method-card,
+  .admin-shopeers-root .wheel-cc-card,
+  .admin-shopeers-root .task-form-card,
+  .admin-shopeers-root .task-pool-card {
+    padding: 16px !important;
+  }
+  .admin-shopeers-root .admin-section-head h2 {
+    font-size: 19px !important;
+  }
+}

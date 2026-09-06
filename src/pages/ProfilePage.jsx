@@ -115,6 +115,7 @@ export default function ProfilePage() {
           'cc_user',
           JSON.stringify({ ...raw, name: form.full_name, email: form.email, avatar: form.avatar_url })
         );
+        window.dispatchEvent(new Event('cc_profile_updated'));
       } catch {}
     } catch (err) {
       setError(err.message);
@@ -309,19 +310,39 @@ export default function ProfilePage() {
           <span>{saving ? 'Saving Changes…' : 'Save Changes'}</span>
         </button>
 
-        {/* Toast Notification */}
+        {/* Inline Save Notice - appears right below Save Changes button where user circled! */}
         <AnimatePresence>
           {toast && (
             <motion.div
-              className="profile-toast-notice"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
+              className="profile-inline-notice"
+              initial={{ opacity: 0, y: -10, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.96 }}
+              style={{
+                marginTop: '16px',
+                marginBottom: '16px',
+                padding: '14px 18px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.12))',
+                border: '1.5px solid #22c55e',
+                color: '#86efac',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                boxShadow: '0 8px 25px rgba(34, 197, 94, 0.25)'
+              }}
             >
-              <CheckCircle2 size={18} />
-              <span>{toast}</span>
-              <button onClick={() => setToast('')}>
-                <X size={14} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <CheckCircle2 size={20} color="#22c55e" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#fff' }}>{toast}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setToast('')}
+                style={{ background: 'transparent', border: 'none', color: '#86efac', cursor: 'pointer', display: 'grid', placeItems: 'center' }}
+              >
+                <X size={16} />
               </button>
             </motion.div>
           )}

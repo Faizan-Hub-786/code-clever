@@ -66,7 +66,7 @@ export default function SupportPage() {
   const [attachmentName, setAttachmentName] = useState('');
   const [previewModalImg, setPreviewModalImg] = useState(null);
   const [inquiries, setInquiries] = useState([]);
-  const [dailyQuota, setDailyQuota] = useState({ dailyUsed: 0, dailyLimit: 4, remaining: 4 });
+  const [dailyQuota, setDailyQuota] = useState({ dailyUsed: 0, dailyLimit: 1, remaining: 1 });
 
   const [expandedFaq, setExpandedFaq] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -82,10 +82,12 @@ export default function SupportPage() {
           setInquiries(d);
         } else if (d && d.list) {
           setInquiries(d.list);
+          const limit = d.dailyLimit || 1;
+          const used = d.dailyUsed || 0;
           setDailyQuota({
-            dailyUsed: d.dailyUsed || 0,
-            dailyLimit: d.dailyLimit || 4,
-            remaining: d.remaining !== undefined ? d.remaining : Math.max(0, 4 - (d.dailyUsed || 0))
+            dailyUsed: used,
+            dailyLimit: limit,
+            remaining: d.remaining !== undefined ? d.remaining : Math.max(0, limit - used)
           });
         }
       }
@@ -256,7 +258,7 @@ export default function SupportPage() {
               <MessageSquare size={14} /> Daily Message Quota:
             </span>
             <span style={{ fontSize: '12px', color: dailyQuota.remaining > 0 ? '#4ade80' : '#f87171', fontWeight: 800 }}>
-              {dailyQuota.dailyUsed}/4 used ({dailyQuota.remaining} remaining today)
+              {dailyQuota.dailyUsed}/{dailyQuota.dailyLimit || 1} used ({dailyQuota.remaining} remaining today)
             </span>
           </div>
 
@@ -356,7 +358,7 @@ export default function SupportPage() {
                   <RefreshCw className="spin" size={18} /> Sending Inquiry…
                 </>
               ) : dailyQuota.remaining <= 0 ? (
-                'Daily Quota Reached (4/4 Used Today)'
+                `Daily Quota Reached (${dailyQuota.dailyLimit || 1}/${dailyQuota.dailyLimit || 1} Used Today)`
               ) : (
                 <>
                   <Send size={16} /> Send Inquiry to Admin
