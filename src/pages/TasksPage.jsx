@@ -163,39 +163,50 @@ export default function TasksPage() {
 
   useEffect(() => {
     loadTasks();
+    const handleFocus = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        loadTasks();
+      }
+    };
+    window.addEventListener('visibilitychange', handleFocus);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('visibilitychange', handleFocus);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
-  // 5-Second Automated Evaluation Handler
+  // 2-Second Automated Evaluation Handler (Smooth 400ms step transitions)
   const handleStart5sEvaluation = (t) => {
     const id = t.assignment_id;
     if (activeEvaluations[id] || t.status === 'completed' || isLocked || isTasksPaused) return;
 
     setMessage('');
 
-    // Step 1 immediately
+    // Step 1 immediately (0ms)
     setActiveEvaluations((prev) => ({ ...prev, [id]: 1 }));
 
-    // Step 2 at 1s
+    // Step 2 at 400ms
     setTimeout(() => {
       setActiveEvaluations((prev) => ({ ...prev, [id]: 2 }));
-    }, 1000);
+    }, 400);
 
-    // Step 3 at 2s
+    // Step 3 at 800ms
     setTimeout(() => {
       setActiveEvaluations((prev) => ({ ...prev, [id]: 3 }));
-    }, 2000);
+    }, 800);
 
-    // Step 4 at 3s
+    // Step 4 at 1200ms
     setTimeout(() => {
       setActiveEvaluations((prev) => ({ ...prev, [id]: 4 }));
-    }, 3000);
+    }, 1200);
 
-    // Step 5 (Reward) at 4s
+    // Step 5 (Reward) at 1600ms
     setTimeout(() => {
       setActiveEvaluations((prev) => ({ ...prev, [id]: 5 }));
-    }, 4000);
+    }, 1600);
 
-    // Final Completion at 5s
+    // Final Completion at 2000ms (2s total)
     setTimeout(async () => {
       try {
         const r = await fetch(`${API_BASE_URL}/tasks/${id}/evaluate`, {
@@ -245,7 +256,7 @@ export default function TasksPage() {
 
         setMessage(`🎉 Task "${t.title}" verified! Rs. ${fmt(earnedReward)} added to your wallet!`);
         // Refresh tasks in background to ensure 100% server sync
-        setTimeout(loadTasks, 800);
+        setTimeout(loadTasks, 600);
       } catch (err) {
         setMessage(`⚠️ ${err.message || 'Task evaluation failed. Please try again.'}`);
       } finally {
@@ -255,7 +266,7 @@ export default function TasksPage() {
           return next;
         });
       }
-    }, 5000);
+    }, 2000);
   };
 
   const totalTasks = summary.total || Number(plan.daily_task_count || 2);
@@ -489,7 +500,7 @@ export default function TasksPage() {
                 ? 'Explore all 25 mobile applications in our verification pool unlocked by tier.'
                 : isLocked
                 ? 'Tasks are locked. Activate an earning package to start evaluating.'
-                : 'Complete each 5-second app evaluation to claim instant wallet rewards.'}
+                : 'Complete verified mobile application evaluations to claim instant wallet rewards.'}
             </p>
           </div>
         </div>
@@ -571,7 +582,7 @@ export default function TasksPage() {
                           </div>
                         ) : isEvaluating ? (
                           <button className="task-download-btn running" disabled>
-                            <RefreshCw className="spin" size={16} /> Evaluating ({evalStep}/5s)...
+                            <RefreshCw className="spin" size={16} /> Evaluating App...
                           </button>
                         ) : (
                           <button
@@ -616,7 +627,7 @@ export default function TasksPage() {
               <div className="empty-task">
                 <CheckCircle2 size={38} />
                 <h3>No completed tasks today yet</h3>
-                <p>Click "Start Evaluation" on any assigned task above to complete it in 5 seconds!</p>
+                <p>Click "Start Evaluation" on any assigned task above to evaluate and claim rewards!</p>
               </div>
             )}
           </div>

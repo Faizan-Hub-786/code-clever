@@ -99,57 +99,69 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    // 1. Fetch user profile
-    fetch(`${API_BASE_URL}/profile`, { headers: getAuthHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d) {
-          setProfile({
-            name: d.full_name || d.name || 'Code Clever User',
-            phone: d.phone ? maskPhone(d.phone) : '+92300******',
-            rawPhone: d.phone || '',
-            email: d.email || 'user@example.com',
-            id: d.id ? 'CC' + String(d.id).padStart(6, '0') : '684AF603',
-            referral_code: d.referral_code || 'CCFA93BC2',
-            avatar_url: d.avatar_url || '/assets/Characters/Male.jpg'
-          });
-        }
-      })
-      .catch(() => {});
+    const refreshAll = () => {
+      // 1. Fetch user profile
+      fetch(`${API_BASE_URL}/profile`, { headers: getAuthHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d) {
+            setProfile({
+              name: d.full_name || d.name || 'Code Clever User',
+              phone: d.phone ? maskPhone(d.phone) : '+92300******',
+              rawPhone: d.phone || '',
+              email: d.email || 'user@example.com',
+              id: d.id ? 'CC' + String(d.id).padStart(6, '0') : '684AF603',
+              referral_code: d.referral_code || 'CCFA93BC2',
+              avatar_url: d.avatar_url || '/assets/Characters/Male.jpg'
+            });
+          }
+        })
+        .catch(() => {});
 
-    // 2. Fetch accurate user earnings summary & stats
-    fetch(`${API_BASE_URL}/user/earnings-summary`, { headers: getAuthHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d) {
-          setStats({
-            yesterday_earned: Number(d.yesterday_earned || 0),
-            today_earned: Number(d.today_earned || 0),
-            total_earned: Number(d.total_earned || 0),
-            week_earned: Number(d.week_earned || 0),
-            completed_tasks: Number(d.completed_tasks || 0),
-            remaining_tasks: Number(d.remaining_tasks || 0),
-            monthly_earned: Number(d.monthly_earned || 0),
-            task_earnings: Number(d.task_earnings || 0),
-            spin_earnings: Number(d.spin_earnings || 0),
-            checkin_earnings: Number(d.checkin_earnings || 0),
-            personal_balance: Number(d.personal_balance || 0),
-            commission_balance: Number(d.commission_balance || 0),
-            team_commission: Number(d.team_commission || 0),
-            referral_rewards: Number(d.referral_rewards || 0)
-          });
-          setCachedWallet({
-            today_earned: Number(d.today_earned || 0),
-            lifetime_earned: Number(d.total_earned || 0),
-            personal_balance: Number(d.personal_balance || 0),
-            commission_balance: Number(d.commission_balance || 0),
-            total_balance: Number(d.personal_balance || 0) + Number(d.commission_balance || 0),
-            tasks_completed: Number(d.completed_tasks || 0),
-            tasks_remaining: Number(d.remaining_tasks || 0)
-          });
-        }
-      })
-      .catch(() => {});
+      // 2. Fetch accurate user earnings summary & stats
+      fetch(`${API_BASE_URL}/user/earnings-summary`, { headers: getAuthHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d) {
+            setStats({
+              yesterday_earned: Number(d.yesterday_earned || 0),
+              today_earned: Number(d.today_earned || 0),
+              total_earned: Number(d.total_earned || 0),
+              week_earned: Number(d.week_earned || 0),
+              completed_tasks: Number(d.completed_tasks || 0),
+              remaining_tasks: Number(d.remaining_tasks || 0),
+              monthly_earned: Number(d.monthly_earned || 0),
+              task_earnings: Number(d.task_earnings || 0),
+              spin_earnings: Number(d.spin_earnings || 0),
+              checkin_earnings: Number(d.checkin_earnings || 0),
+              personal_balance: Number(d.personal_balance || 0),
+              commission_balance: Number(d.commission_balance || 0),
+              team_commission: Number(d.team_commission || 0),
+              referral_rewards: Number(d.referral_rewards || 0)
+            });
+            setCachedWallet({
+              today_earned: Number(d.today_earned || 0),
+              lifetime_earned: Number(d.total_earned || 0),
+              personal_balance: Number(d.personal_balance || 0),
+              commission_balance: Number(d.commission_balance || 0),
+              total_balance: Number(d.personal_balance || 0) + Number(d.commission_balance || 0),
+              tasks_completed: Number(d.completed_tasks || 0),
+              tasks_remaining: Number(d.remaining_tasks || 0)
+            });
+          }
+        })
+        .catch(() => {});
+    };
+
+    refreshAll();
+
+    const handleFocus = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refreshAll();
+      }
+    };
+    window.addEventListener('visibilitychange', handleFocus);
+    window.addEventListener('focus', handleFocus);
 
     const handleWalletUpdate = (e) => {
       const u = e.detail;
@@ -165,7 +177,11 @@ export default function SettingsPage() {
       }));
     };
     window.addEventListener('cc_wallet_updated', handleWalletUpdate);
-    return () => window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
+    return () => {
+      window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
+      window.removeEventListener('visibilitychange', handleFocus);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const maskPhone = (phone) => {

@@ -172,6 +172,15 @@ export default function HomePage() {
     };
     window.addEventListener('cc_wallet_updated', handleWalletUpdate);
 
+    // Automatically revalidate values whenever the tab gains focus or becomes visible
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchDashboard();
+      }
+    };
+    window.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onVisibilityChange);
+
     // Fetch active announcement for start pop-up
     const fetchAnnouncement = async () => {
       try {
@@ -201,6 +210,8 @@ export default function HomePage() {
 
     return () => {
       window.removeEventListener('cc_wallet_updated', handleWalletUpdate);
+      window.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', onVisibilityChange);
     };
   }, []);
 

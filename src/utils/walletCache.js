@@ -1,26 +1,26 @@
 // Lightweight, instant Stale-While-Revalidate (SWR) cache for wallet & profile data.
-// Eliminates 3-5 second page switching delays by providing instant synchronous state on mount.
+// Eliminates page switching delays by providing instant synchronous state on mount.
 
-const CACHE_KEY = 'cc_wallet_cache_v3';
+const CACHE_KEY = 'cc_wallet_cache_v4';
 
 let memoryCache = null;
 
 const DEFAULT_STATE = {
-  available_balance: 15500,
-  personal_balance: 15500,
-  commission_balance: 100,
-  total_balance: 15600,
-  lifetime_earned: 100,
+  available_balance: 0,
+  personal_balance: 0,
+  commission_balance: 0,
+  total_balance: 0,
+  lifetime_earned: 0,
   pending_balance: 0,
   today_earned: 0,
   monthly_earned: 0,
   week_earned: 0,
   tasks_completed: 0,
   tasks_remaining: 2,
-  plan_code: 'C1',
-  plan_name: 'Starter',
+  plan_code: 'INTERN',
+  plan_name: 'Internship (3-Day Free Trial)',
   user_name: 'Code Clever User',
-  referral_code: 'CC1000'
+  referral_code: ''
 };
 
 export function getCachedWallet() {
@@ -47,6 +47,8 @@ export function setCachedWallet(partial) {
     const c = Number(updated.commission_balance ?? 0);
     updated.total_balance = p + c;
     updated.available_balance = p;
+    updated.personal_balance = p;
+    updated.commission_balance = c;
   }
   
   memoryCache = updated;
@@ -59,4 +61,14 @@ export function setCachedWallet(partial) {
     window.dispatchEvent(new CustomEvent('cc_wallet_updated', { detail: updated }));
   }
   return updated;
+}
+
+export function clearCachedWallet() {
+  memoryCache = { ...DEFAULT_STATE };
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {}
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cc_wallet_updated', { detail: memoryCache }));
+  }
 }

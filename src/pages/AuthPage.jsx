@@ -28,6 +28,7 @@ import {
   Zap
 } from 'lucide-react';
 import { API_BASE_URL } from '../api/config';
+import { setCachedWallet } from '../utils/walletCache';
 import AuthChatBot from '../components/auth/AuthChatBot';
 import SpiderWebCaptcha from '../components/auth/SpiderWebCaptcha';
 
@@ -230,11 +231,20 @@ export default function AuthPage({ mode = 'login' }) {
 
       if (d.token) {
         sessionStorage.setItem('cc_token', d.token);
-        localStorage.removeItem('cc_token');
+        localStorage.setItem('cc_token', d.token);
       }
       if (d.user) {
         sessionStorage.setItem('cc_user', JSON.stringify(d.user));
-        localStorage.removeItem('cc_user');
+        localStorage.setItem('cc_user', JSON.stringify(d.user));
+      }
+      if (d.wallet) {
+        setCachedWallet({
+          ...d.wallet,
+          user_name: d.user?.full_name || d.user?.name || '',
+          referral_code: d.user?.referral_code || d.user?.referralCode || '',
+          plan_code: d.plan?.code || 'INTERN',
+          plan_name: d.plan?.name || 'Internship (3-Day Free Trial)'
+        });
       }
       nav('/home');
     } catch (err) {

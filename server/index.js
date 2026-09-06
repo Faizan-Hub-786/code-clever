@@ -333,19 +333,53 @@ async function initDatabase() {
     try { await pool.execute(`ALTER TABLE support_inquiries MODIFY COLUMN user_id BIGINT UNSIGNED NULL DEFAULT NULL`); } catch {}
     try { await pool.execute(`ALTER TABLE support_inquiries ADD COLUMN attachment_url LONGTEXT NULL DEFAULT NULL`); } catch {}
 
-    // Ensure task_library has active tasks
+    // Ensure task_library has all 25 active tasks with realistic names & icons
     try {
-      const [[libCount]] = await pool.execute(`SELECT COUNT(*) AS c FROM task_library`);
-      if (Number(libCount?.c || 0) === 0) {
-        await pool.execute(`
-          INSERT INTO task_library (title, category, app_icon, app_url, description, verification_type, active) VALUES
-          ('TikTok Lite', 'Social Video', '/assets/Apps Icons/tiktok.svg', 'https://www.tiktok.com/', 'Evaluate short-form video streaming latency, audio sync, and engagement response.', 'proof', 1),
-          ('Instagram Reels', 'Media & Photo', '/assets/Apps Icons/instagram.svg', 'https://www.instagram.com/', 'Verify instant reel playback buffer, story camera filter rendering, and DM delivery.', 'proof', 1),
-          ('Clash of Clans', 'Strategy Gaming', '/assets/Apps Icons/Clash of clan.jpg', 'https://supercell.com/', 'Evaluate 60 FPS multiplayer village load times and army attack animations.', 'proof', 1),
-          ('Gardenscapes', 'Casual Puzzle', '/assets/Apps Icons/Gardensacpes.jpg', 'https://playrix.com/', 'Test puzzle board gesture sensitivity and booster reward claiming responsiveness.', 'proof', 1)
-        `);
+      const DEFAULT_25_TASKS = [
+        ['TikTok Lite', 'Social Video', '/assets/Apps Icons/tiktok.svg', 'https://www.tiktok.com/', 'Evaluate short-form video streaming latency, audio sync, and engagement response.', 'proof', 1],
+        ['Instagram Reels', 'Media & Photo', '/assets/Apps Icons/instagram.svg', 'https://www.instagram.com/', 'Verify instant reel playback buffer, story camera filter rendering, and DM delivery.', 'proof', 1],
+        ['Clash of Clans', 'Strategy Gaming', '/assets/Apps Icons/Clash of clan.jpg', 'https://supercell.com/', 'Evaluate 60 FPS multiplayer village load times and army attack animations.', 'proof', 1],
+        ['Gardenscapes', 'Casual Puzzle', '/assets/Apps Icons/Gardensacpes.jpg', 'https://playrix.com/', 'Test puzzle board gesture sensitivity and booster reward claiming responsiveness.', 'proof', 1],
+        ['Easypaisa FastPay', 'FinTech & Mobile Money', '/assets/Apps Icons/04afefd3-aaf3-4d08-86e9-3c1281220097.jpg', 'https://easypaisa.com.pk/', 'Test QR payment scanner, instant mobile load, and biometric login authentication.', 'proof', 1],
+        ['JazzCash Wallet Hub', 'Digital Banking & Payments', '/assets/Apps Icons/0e5c35cd-c964-4501-a66b-b5f0ebaad134.jpg', 'https://jazzcash.com.pk/', 'Verify money transfer routing speed, debit card controls, and utility bill payments.', 'proof', 1],
+        ['SadaPay Mastercard', 'Digital Neobank', '/assets/Apps Icons/2ba54139-e360-43e4-b841-77d647d9a6de.jpg', 'https://sadapay.pk/', 'Test virtual Mastercard instant card freezing, FX exchange rate preview, and fee-free ATM locator UI.', 'proof', 1],
+        ['NayaPay Visa Wallet', 'Finance & Everyday Lifestyle', '/assets/Apps Icons/3456afe7-efc5-4566-a9f4-18c4619d4f59.jpg', 'https://nayapay.com/', 'Evaluate bill payment barcode scanner, in-chat money requests, and real-time SMS OTP verification speed.', 'proof', 1],
+        ['Daraz Mega Shopping', 'E-Commerce Marketplace', '/assets/Apps Icons/35d9294f-9bd9-40e4-8164-6403fb83a7a4.jpg', 'https://www.daraz.pk/', 'Test flash sale countdown timer accuracy, voucher claim 1-tap interaction, and doorstep COD checkout.', 'proof', 1],
+        ['Foodpanda Express', 'Food Delivery & Pandamart', '/assets/Apps Icons/4f100358-b530-4e4c-bcb9-ccdfa2430b97.jpg', 'https://www.foodpanda.pk/', 'Verify live GPS rider delivery tracking accuracy, restaurant menu search filters, and tip tipping workflow.', 'proof', 1],
+        ['Careem Super App', 'Mobility & Super App', '/assets/Apps Icons/52d3be58-9f62-43c6-83ed-576a559edefe.jpg', 'https://www.careem.com/', 'Audit captain fare estimator accuracy, route map rerouting smoothness, and Careem Pay wallet top-up.', 'proof', 1],
+        ['InDrive Fare Bidding', 'Ride Sharing & Courier', '/assets/Apps Icons/5a83967b-89fa-4b58-8ae3-1f73f0c5bcf9.jpg', 'https://indrive.com/', 'Evaluate peer-to-peer fare negotiation modal, passenger safety shield SOS, and driver rating submission.', 'proof', 1],
+        ['Bykea Fast Logistics', 'Bike Taxi & Cash Delivery', '/assets/Apps Icons/64f73a5f-0327-4136-aaf1-ecc21cd8d01d.jpg', 'https://bykea.com/', 'Verify parcel express booking, cash collection PIN verification, and driver distance estimation.', 'proof', 1],
+        ['OLX Marketplace', 'Classifieds & Autos', '/assets/Apps Icons/676cbef9-ee20-4309-93cb-27ca8bfe47a7.jpg', 'https://www.olx.com.pk/', 'Test classified photo compressor, direct buyer chat notifications, and verified seller badge display.', 'proof', 1],
+        ['PakWheels Auto Portal', 'Automotive & Inspection', '/assets/Apps Icons/6bcac3ef-c49b-437e-8f9b-9767ab8cfa4b.jpg', 'https://www.pakwheels.com/', 'Audit used car price valuation algorithm, 200+ point inspection report viewer, and auction sheet verifier.', 'proof', 1],
+        ['Zameen Property Finder', 'Real Estate & Homes', '/assets/Apps Icons/7236c134-b48a-4019-aa2c-7976bdc248a8.jpg', 'https://www.zameen.com/', 'Verify interactive plot finder map layers, property price index trends, and home mortgage calculator.', 'proof', 1],
+        ['Tamasha Live Cricket HD', 'Sports OTT & Live TV', '/assets/Apps Icons/72497e50-57ca-4837-a884-d9d6e4bf4335.jpg', 'https://tamashaweb.com/', 'Test adaptive bitrate HD live cricket match streaming, background audio PIP, and coin reward hub.', 'proof', 1],
+        ['Tapmad TV Sports Pro', 'Live Entertainment & Matches', '/assets/Apps Icons/74b0ffc5-4365-4c63-86e0-b379b7b9909a.jpg', 'https://tapmad.com/', 'Evaluate 4K HDR ultra-low latency live stream feed, ad-free replay buffer, and multi-language audio switch.', 'proof', 1],
+        ['Cricbuzz Ball by Ball', 'Sports Analytics & News', '/assets/Apps Icons/7dd2f6c0-3968-403e-bfc1-3b428fb6812a.jpg', 'https://www.cricbuzz.com/', 'Review ball-by-ball commentary sync accuracy, live win probability graphs, and push notification speed.', 'proof', 1],
+        ['Binance Pro Crypto', 'Digital Assets & Trading', '/assets/Apps Icons/89ff8a78-4037-4d77-ab9d-f19632941e9e.jpg', 'https://www.binance.com/', 'Audit candlestick technical chart response, P2P escrow payment verification, and price alert alerts.', 'proof', 1],
+        ['Duolingo Language Quest', 'AI Education & Learning', '/assets/Apps Icons/95ed9ece-3f29-4ec2-ba7d-22798de21864.jpg', 'https://www.duolingo.com/', 'Test speech pronunciation AI voice recognition, interactive lesson streak counter, and audio lesson clips.', 'proof', 1],
+        ['Canva Design Studio', 'Graphics & Visual Content', '/assets/Apps Icons/9740210f-818f-4c1a-a17d-a017105b0f1f.jpg', 'https://www.canva.com/', 'Verify drag-and-drop template editor responsiveness, background remover AI tool, and high-res image export.', 'proof', 1],
+        ['CapCut Video Studio Pro', 'Video Editing & Effects', '/assets/Apps Icons/97407e33-43f3-443b-a79c-254aa9e3ca13.jpg', 'https://www.capcut.com/', 'Evaluate multi-layer video timeline scrubbing, auto-subtitle speech generator, and 4K 60fps video export.', 'proof', 1],
+        ['Spotify Music & Podcasts', 'Audio Streaming & Discovery', '/assets/Apps Icons/a67fe4e6-900f-49ad-9457-18790efa0f51.jpg', 'https://spotify.com/', 'Test seamless song crossfade transitions, offline high-quality audio playback, and personalized playlist generator.', 'proof', 1],
+        ['Telegram Messenger X', 'Encrypted Cloud Messaging', '/assets/Apps Icons/c625c119-ca84-4407-a899-79c8ab8e0f4b.jpg', 'https://telegram.org/', 'Evaluate secret end-to-end encrypted chat latency, 2GB large file upload speed, and group poll creation.', 'proof', 1]
+      ];
+
+      for (const t of DEFAULT_25_TASKS) {
+        const [existing] = await pool.execute('SELECT id FROM task_library WHERE title=? LIMIT 1', [t[0]]);
+        if (!existing.length) {
+          await pool.execute(
+            'INSERT INTO task_library (title, category, app_icon, app_url, description, verification_type, active) VALUES (?,?,?,?,?,?,?)',
+            t
+          );
+        } else {
+          await pool.execute(
+            'UPDATE task_library SET category=?, app_icon=?, app_url=?, description=?, verification_type=?, active=? WHERE id=?',
+            [t[1], t[2], t[3], t[4], t[5], t[6], existing[0].id]
+          );
+        }
       }
-    } catch {}
+    } catch (e) {
+      console.error('Task library seed error:', e);
+    }
 
     // Export history table
     await pool.execute(`
@@ -1085,13 +1119,18 @@ app.post('/api/auth/register', async (req, res) => {
     const answerHash = cleanAnswer ? await bcrypt.hash(cleanAnswer, 10) : null;
     const role = isFirstUser ? 'admin' : 'user';
 
-    // If active plan is required, normal members do NOT get a referral code created until they activate a plan!
-    const [[planReqRow]] = await conn.execute(`SELECT value_json FROM site_settings WHERE setting_key='require_active_plan_to_refer' LIMIT 1`);
-    const isPlanRequired = planReqRow ? (planReqRow.value_json === 'true' || planReqRow.value_json === true) : true;
-    
-    let code = null;
-    if (isFirstUser || !isPlanRequired || role === 'admin') {
-      code = 'CC' + Math.random().toString(36).slice(2, 9).toUpperCase();
+    // Always generate a unique non-null referral code for every registered member
+    let code = '';
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const candidate = 'CC' + Math.random().toString(36).slice(2, 9).toUpperCase();
+      const [existing] = await conn.execute('SELECT id FROM users WHERE referral_code=? LIMIT 1', [candidate]);
+      if (!existing.length) {
+        code = candidate;
+        break;
+      }
+    }
+    if (!code) {
+      code = 'CC' + Date.now().toString(36).toUpperCase().slice(-7);
     }
 
     const [u] = await conn.execute(
@@ -1121,6 +1160,20 @@ app.post('/api/auth/register', async (req, res) => {
         referralCode: code,
         referral_code: code,
         role
+      },
+      wallet: {
+        available_balance: 0,
+        personal_balance: 0,
+        commission_balance: 0,
+        total_balance: 0,
+        lifetime_earned: 0,
+        pending_balance: 0
+      },
+      plan: {
+        code: 'INTERN',
+        name: 'Internship (3-Day Free Trial)',
+        daily_task_count: 2,
+        unit_reward: 59
       },
       message: 'Account created successfully.'
     });
@@ -1161,7 +1214,45 @@ app.post('/api/auth/login', async (req, res) => {
     }
     await pool.execute(`UPDATE users SET last_login_at=NOW() WHERE id=?`, [u.id]);
     const token = jwt.sign({ id: u.id, email: u.email, role: u.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
-    res.json({ token, user: { id: u.id, name: u.full_name, full_name: u.full_name, email: u.email, referralCode: u.referral_code, referral_code: u.referral_code, role: u.role } });
+
+    // Fetch immediate wallet & plan snapshot for 0ms render without secondary roundtrip
+    const [[walletRow]] = await pool.execute('SELECT available_balance, commission_balance, lifetime_earned, pending_balance FROM wallets WHERE user_id=?', [u.id]);
+    const plan = await getActivePlan(pool, u.id);
+
+    const avail = Number(walletRow?.available_balance || 0);
+    const comm = Number(walletRow?.commission_balance || 0);
+
+    res.json({
+      token,
+      user: {
+        id: u.id,
+        name: u.full_name,
+        full_name: u.full_name,
+        email: u.email,
+        referralCode: u.referral_code,
+        referral_code: u.referral_code,
+        role: u.role
+      },
+      wallet: {
+        available_balance: avail,
+        personal_balance: avail,
+        commission_balance: comm,
+        total_balance: avail + comm,
+        lifetime_earned: Number(walletRow?.lifetime_earned || 0),
+        pending_balance: Number(walletRow?.pending_balance || 0)
+      },
+      plan: plan ? {
+        code: plan.code,
+        name: plan.name,
+        daily_task_count: plan.daily_task_count,
+        unit_reward: plan.unit_reward
+      } : {
+        code: 'INTERN',
+        name: 'Internship (3-Day Free Trial)',
+        daily_task_count: 2,
+        unit_reward: 59
+      }
+    });
   } catch (err) {
     console.error('Login error:', err);
     if (err.code === 'ECONNREFUSED') {
@@ -1964,10 +2055,35 @@ app.post('/api/tasks/:assignmentId/evaluate', auth, async (req, res) => {
       JOIN task_library tl ON tl.id=dt.task_library_id
       WHERE uta.id=? AND uta.user_id=? FOR UPDATE
     `, [req.params.assignmentId, req.user.id]);
-    const task = rows[0];
+    let task = rows[0];
     if (!task) {
-      await conn.rollback();
-      return res.status(404).json({ message: 'Task not found' });
+      // Auto-recovery: If specific assignment ID is not found, sync and find next available assignment for today
+      const plan = await getActivePlan(conn, req.user.id);
+      await syncUserDailyTasks(conn, req.user.id, plan);
+      const [availRows] = await conn.execute(`
+        SELECT uta.*, w.id AS wallet_id, w.available_balance, w.commission_balance, tl.title AS task_title
+        FROM user_task_assignments uta
+        JOIN wallets w ON w.user_id=uta.user_id
+        JOIN daily_tasks dt ON dt.id=uta.daily_task_id
+        JOIN task_library tl ON tl.id=dt.task_library_id
+        WHERE uta.user_id=? AND dt.task_date=CURDATE() AND uta.status != 'completed'
+        ORDER BY uta.id ASC LIMIT 1 FOR UPDATE
+      `, [req.user.id]);
+      task = availRows[0];
+      if (!task) {
+        // Check if user already finished all daily tasks for today
+        const [anyDone] = await conn.execute(`
+          SELECT uta.reward FROM user_task_assignments uta
+          JOIN daily_tasks dt ON dt.id=uta.daily_task_id
+          WHERE uta.user_id=? AND dt.task_date=CURDATE() AND uta.status='completed'
+          LIMIT 1
+        `, [req.user.id]);
+        await conn.rollback();
+        if (anyDone.length) {
+          return res.json({ ok: true, alreadyCompleted: true, message: 'All daily tasks for today have been completed!' });
+        }
+        return res.status(404).json({ message: 'No available tasks found for today.' });
+      }
     }
     if (task.status === 'completed') {
       await conn.rollback();

@@ -5,12 +5,17 @@ import { LogOut } from 'lucide-react';
 import GlowBg from '../components/common/GlowBg';
 import Logo from '../components/common/Logo';
 
+import { clearCachedWallet } from '../utils/walletCache';
+
 export default function LogoutPage() {
   const nav = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('cc_user');
     localStorage.removeItem('cc_token');
+    sessionStorage.removeItem('cc_user');
+    sessionStorage.removeItem('cc_token');
+    clearCachedWallet();
     nav('/login');
   };
 
