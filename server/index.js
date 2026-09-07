@@ -226,6 +226,35 @@ async function grantUserSpins(conn, userId, count, source, note = '', grantedBy 
   }
 }
 
+// ----------------- DEFAULT 25 REAL SPONSOR TASKS -----------------
+const DEFAULT_25_TASKS = [
+  ['TikTok Lite', 'Social Video', '/assets/Apps Icons/tiktok.svg', 'https://www.tiktok.com/', 'Evaluate short-form video streaming latency, audio sync, and engagement response.', 'proof', 1],
+  ['Instagram Reels', 'Media & Photo', '/assets/Apps Icons/instagram.svg', 'https://www.instagram.com/', 'Verify instant reel playback buffer, story camera filter rendering, and DM delivery.', 'proof', 1],
+  ['Clash of Clans', 'Strategy Gaming', '/assets/Apps Icons/Clash of clan.jpg', 'https://supercell.com/', 'Evaluate 60 FPS multiplayer village load times and army attack animations.', 'proof', 1],
+  ['Gardenscapes', 'Casual Puzzle', '/assets/Apps Icons/Gardensacpes.jpg', 'https://playrix.com/', 'Test puzzle board gesture sensitivity and booster reward claiming responsiveness.', 'proof', 1],
+  ['Easypaisa FastPay', 'FinTech & Mobile Money', '/assets/Apps Icons/04afefd3-aaf3-4d08-86e9-3c1281220097.jpg', 'https://easypaisa.com.pk/', 'Test QR payment scanner, instant mobile load, and biometric login authentication.', 'proof', 1],
+  ['JazzCash Wallet Hub', 'Digital Banking & Payments', '/assets/Apps Icons/0e5c35cd-c964-4501-a66b-b5f0ebaad134.jpg', 'https://jazzcash.com.pk/', 'Verify money transfer routing speed, debit card controls, and utility bill payments.', 'proof', 1],
+  ['SadaPay Mastercard', 'Digital Neobank', '/assets/Apps Icons/2ba54139-e360-43e4-b841-77d647d9a6de.jpg', 'https://sadapay.pk/', 'Test virtual Mastercard instant card freezing, FX exchange rate preview, and fee-free ATM locator UI.', 'proof', 1],
+  ['NayaPay Visa Wallet', 'Finance & Everyday Lifestyle', '/assets/Apps Icons/3456afe7-efc5-4566-a9f4-18c4619d4f59.jpg', 'https://nayapay.com/', 'Evaluate bill payment barcode scanner, in-chat money requests, and real-time SMS OTP verification speed.', 'proof', 1],
+  ['Daraz Mega Shopping', 'E-Commerce Marketplace', '/assets/Apps Icons/35d9294f-9bd9-40e4-8164-6403fb83a7a4.jpg', 'https://www.daraz.pk/', 'Test flash sale countdown timer accuracy, voucher claim 1-tap interaction, and doorstep COD checkout.', 'proof', 1],
+  ['Foodpanda Express', 'Food Delivery & Pandamart', '/assets/Apps Icons/4f100358-b530-4e4c-bcb9-ccdfa2430b97.jpg', 'https://www.foodpanda.pk/', 'Verify live GPS rider delivery tracking accuracy, restaurant menu search filters, and tip tipping workflow.', 'proof', 1],
+  ['Careem Super App', 'Mobility & Super App', '/assets/Apps Icons/52d3be58-9f62-43c6-83ed-576a559edefe.jpg', 'https://www.careem.com/', 'Audit captain fare estimator accuracy, route map rerouting smoothness, and Careem Pay wallet top-up.', 'proof', 1],
+  ['InDrive Fare Bidding', 'Ride Sharing & Courier', '/assets/Apps Icons/5a83967b-89fa-4b58-8ae3-1f73f0c5bcf9.jpg', 'https://indrive.com/', 'Evaluate peer-to-peer fare negotiation modal, passenger safety shield SOS, and driver rating submission.', 'proof', 1],
+  ['Bykea Fast Logistics', 'Bike Taxi & Cash Delivery', '/assets/Apps Icons/64f73a5f-0327-4136-aaf1-ecc21cd8d01d.jpg', 'https://bykea.com/', 'Verify parcel express booking, cash collection PIN verification, and driver distance estimation.', 'proof', 1],
+  ['OLX Marketplace', 'Classifieds & Autos', '/assets/Apps Icons/676cbef9-ee20-4309-93cb-27ca8bfe47a7.jpg', 'https://www.olx.com.pk/', 'Test classified photo compressor, direct buyer chat notifications, and verified seller badge display.', 'proof', 1],
+  ['PakWheels Auto Portal', 'Automotive & Inspection', '/assets/Apps Icons/6bcac3ef-c49b-437e-8f9b-9767ab8cfa4b.jpg', 'https://www.pakwheels.com/', 'Audit used car price valuation algorithm, 200+ point inspection report viewer, and auction sheet verifier.', 'proof', 1],
+  ['Zameen Property Finder', 'Real Estate & Homes', '/assets/Apps Icons/7236c134-b48a-4019-aa2c-7976bdc248a8.jpg', 'https://www.zameen.com/', 'Verify interactive plot finder map layers, property price index trends, and home mortgage calculator.', 'proof', 1],
+  ['Tamasha Live Cricket HD', 'Sports OTT & Live TV', '/assets/Apps Icons/72497e50-57ca-4837-a884-d9d6e4bf4335.jpg', 'https://tamashaweb.com/', 'Test adaptive bitrate HD live cricket match streaming, background audio PIP, and coin reward hub.', 'proof', 1],
+  ['Tapmad TV Sports Pro', 'Live Entertainment & Matches', '/assets/Apps Icons/74b0ffc5-4365-4c63-86e0-b379b7b9909a.jpg', 'https://tapmad.com/', 'Evaluate 4K HDR ultra-low latency live stream feed, ad-free replay buffer, and multi-language audio switch.', 'proof', 1],
+  ['Cricbuzz Ball by Ball', 'Sports Analytics & News', '/assets/Apps Icons/7dd2f6c0-3968-403e-bfc1-3b428fb6812a.jpg', 'https://www.cricbuzz.com/', 'Review ball-by-ball commentary sync accuracy, live win probability graphs, and push notification speed.', 'proof', 1],
+  ['Binance Pro Crypto', 'Digital Assets & Trading', '/assets/Apps Icons/89ff8a78-4037-4d77-ab9d-f19632941e9e.jpg', 'https://www.binance.com/', 'Audit candlestick technical chart response, P2P escrow payment verification, and price alert alerts.', 'proof', 1],
+  ['Duolingo Language Quest', 'AI Education & Learning', '/assets/Apps Icons/95ed9ece-3f29-4ec2-ba7d-22798de21864.jpg', 'https://duolingo.com/', 'Test speech pronunciation AI voice recognition, interactive lesson streak counter, and audio lesson clips.', 'proof', 1],
+  ['Canva Design Studio', 'Graphics & Visual Content', '/assets/Apps Icons/9740210f-818f-4c1a-a17d-a017105b0f1f.jpg', 'https://canva.com/', 'Verify drag-and-drop template editor responsiveness, background remover AI tool, and high-res image export.', 'proof', 1],
+  ['CapCut Video Studio Pro', 'Video Editing & Effects', '/assets/Apps Icons/97407e33-43f3-443b-a79c-254aa9e3ca13.jpg', 'https://capcut.com/', 'Evaluate multi-layer video timeline scrubbing, auto-subtitle speech generator, and 4K 60fps video export.', 'proof', 1],
+  ['Spotify Music & Podcasts', 'Audio Streaming & Discovery', '/assets/Apps Icons/a67fe4e6-900f-49ad-9457-18790efa0f51.jpg', 'https://spotify.com/', 'Test seamless song crossfade transitions, offline high-quality audio playback, and personalized playlist generator.', 'proof', 1],
+  ['Telegram Messenger X', 'Encrypted Cloud Messaging', '/assets/Apps Icons/c625c119-ca84-4407-a899-79c8ab8e0f4b.jpg', 'https://telegram.org/', 'Evaluate secret end-to-end encrypted chat latency, 2GB large file upload speed, and group poll creation.', 'proof', 1]
+];
+
 // ----------------- DATABASE SCHEMA AUTO-INIT -----------------
 async function initDatabase() {
   try {
@@ -353,34 +382,6 @@ async function initDatabase() {
 
     // Ensure task_library has all 25 active tasks with realistic names & icons
     try {
-      const DEFAULT_25_TASKS = [
-        ['TikTok Lite', 'Social Video', '/assets/Apps Icons/tiktok.svg', 'https://www.tiktok.com/', 'Evaluate short-form video streaming latency, audio sync, and engagement response.', 'proof', 1],
-        ['Instagram Reels', 'Media & Photo', '/assets/Apps Icons/instagram.svg', 'https://www.instagram.com/', 'Verify instant reel playback buffer, story camera filter rendering, and DM delivery.', 'proof', 1],
-        ['Clash of Clans', 'Strategy Gaming', '/assets/Apps Icons/Clash of clan.jpg', 'https://supercell.com/', 'Evaluate 60 FPS multiplayer village load times and army attack animations.', 'proof', 1],
-        ['Gardenscapes', 'Casual Puzzle', '/assets/Apps Icons/Gardensacpes.jpg', 'https://playrix.com/', 'Test puzzle board gesture sensitivity and booster reward claiming responsiveness.', 'proof', 1],
-        ['Easypaisa FastPay', 'FinTech & Mobile Money', '/assets/Apps Icons/04afefd3-aaf3-4d08-86e9-3c1281220097.jpg', 'https://easypaisa.com.pk/', 'Test QR payment scanner, instant mobile load, and biometric login authentication.', 'proof', 1],
-        ['JazzCash Wallet Hub', 'Digital Banking & Payments', '/assets/Apps Icons/0e5c35cd-c964-4501-a66b-b5f0ebaad134.jpg', 'https://jazzcash.com.pk/', 'Verify money transfer routing speed, debit card controls, and utility bill payments.', 'proof', 1],
-        ['SadaPay Mastercard', 'Digital Neobank', '/assets/Apps Icons/2ba54139-e360-43e4-b841-77d647d9a6de.jpg', 'https://sadapay.pk/', 'Test virtual Mastercard instant card freezing, FX exchange rate preview, and fee-free ATM locator UI.', 'proof', 1],
-        ['NayaPay Visa Wallet', 'Finance & Everyday Lifestyle', '/assets/Apps Icons/3456afe7-efc5-4566-a9f4-18c4619d4f59.jpg', 'https://nayapay.com/', 'Evaluate bill payment barcode scanner, in-chat money requests, and real-time SMS OTP verification speed.', 'proof', 1],
-        ['Daraz Mega Shopping', 'E-Commerce Marketplace', '/assets/Apps Icons/35d9294f-9bd9-40e4-8164-6403fb83a7a4.jpg', 'https://www.daraz.pk/', 'Test flash sale countdown timer accuracy, voucher claim 1-tap interaction, and doorstep COD checkout.', 'proof', 1],
-        ['Foodpanda Express', 'Food Delivery & Pandamart', '/assets/Apps Icons/4f100358-b530-4e4c-bcb9-ccdfa2430b97.jpg', 'https://www.foodpanda.pk/', 'Verify live GPS rider delivery tracking accuracy, restaurant menu search filters, and tip tipping workflow.', 'proof', 1],
-        ['Careem Super App', 'Mobility & Super App', '/assets/Apps Icons/52d3be58-9f62-43c6-83ed-576a559edefe.jpg', 'https://www.careem.com/', 'Audit captain fare estimator accuracy, route map rerouting smoothness, and Careem Pay wallet top-up.', 'proof', 1],
-        ['InDrive Fare Bidding', 'Ride Sharing & Courier', '/assets/Apps Icons/5a83967b-89fa-4b58-8ae3-1f73f0c5bcf9.jpg', 'https://indrive.com/', 'Evaluate peer-to-peer fare negotiation modal, passenger safety shield SOS, and driver rating submission.', 'proof', 1],
-        ['Bykea Fast Logistics', 'Bike Taxi & Cash Delivery', '/assets/Apps Icons/64f73a5f-0327-4136-aaf1-ecc21cd8d01d.jpg', 'https://bykea.com/', 'Verify parcel express booking, cash collection PIN verification, and driver distance estimation.', 'proof', 1],
-        ['OLX Marketplace', 'Classifieds & Autos', '/assets/Apps Icons/676cbef9-ee20-4309-93cb-27ca8bfe47a7.jpg', 'https://www.olx.com.pk/', 'Test classified photo compressor, direct buyer chat notifications, and verified seller badge display.', 'proof', 1],
-        ['PakWheels Auto Portal', 'Automotive & Inspection', '/assets/Apps Icons/6bcac3ef-c49b-437e-8f9b-9767ab8cfa4b.jpg', 'https://www.pakwheels.com/', 'Audit used car price valuation algorithm, 200+ point inspection report viewer, and auction sheet verifier.', 'proof', 1],
-        ['Zameen Property Finder', 'Real Estate & Homes', '/assets/Apps Icons/7236c134-b48a-4019-aa2c-7976bdc248a8.jpg', 'https://www.zameen.com/', 'Verify interactive plot finder map layers, property price index trends, and home mortgage calculator.', 'proof', 1],
-        ['Tamasha Live Cricket HD', 'Sports OTT & Live TV', '/assets/Apps Icons/72497e50-57ca-4837-a884-d9d6e4bf4335.jpg', 'https://tamashaweb.com/', 'Test adaptive bitrate HD live cricket match streaming, background audio PIP, and coin reward hub.', 'proof', 1],
-        ['Tapmad TV Sports Pro', 'Live Entertainment & Matches', '/assets/Apps Icons/74b0ffc5-4365-4c63-86e0-b379b7b9909a.jpg', 'https://tapmad.com/', 'Evaluate 4K HDR ultra-low latency live stream feed, ad-free replay buffer, and multi-language audio switch.', 'proof', 1],
-        ['Cricbuzz Ball by Ball', 'Sports Analytics & News', '/assets/Apps Icons/7dd2f6c0-3968-403e-bfc1-3b428fb6812a.jpg', 'https://www.cricbuzz.com/', 'Review ball-by-ball commentary sync accuracy, live win probability graphs, and push notification speed.', 'proof', 1],
-        ['Binance Pro Crypto', 'Digital Assets & Trading', '/assets/Apps Icons/89ff8a78-4037-4d77-ab9d-f19632941e9e.jpg', 'https://www.binance.com/', 'Audit candlestick technical chart response, P2P escrow payment verification, and price alert alerts.', 'proof', 1],
-        ['Duolingo Language Quest', 'AI Education & Learning', '/assets/Apps Icons/95ed9ece-3f29-4ec2-ba7d-22798de21864.jpg', 'https://www.duolingo.com/', 'Test speech pronunciation AI voice recognition, interactive lesson streak counter, and audio lesson clips.', 'proof', 1],
-        ['Canva Design Studio', 'Graphics & Visual Content', '/assets/Apps Icons/9740210f-818f-4c1a-a17d-a017105b0f1f.jpg', 'https://www.canva.com/', 'Verify drag-and-drop template editor responsiveness, background remover AI tool, and high-res image export.', 'proof', 1],
-        ['CapCut Video Studio Pro', 'Video Editing & Effects', '/assets/Apps Icons/97407e33-43f3-443b-a79c-254aa9e3ca13.jpg', 'https://www.capcut.com/', 'Evaluate multi-layer video timeline scrubbing, auto-subtitle speech generator, and 4K 60fps video export.', 'proof', 1],
-        ['Spotify Music & Podcasts', 'Audio Streaming & Discovery', '/assets/Apps Icons/a67fe4e6-900f-49ad-9457-18790efa0f51.jpg', 'https://spotify.com/', 'Test seamless song crossfade transitions, offline high-quality audio playback, and personalized playlist generator.', 'proof', 1],
-        ['Telegram Messenger X', 'Encrypted Cloud Messaging', '/assets/Apps Icons/c625c119-ca84-4407-a899-79c8ab8e0f4b.jpg', 'https://telegram.org/', 'Evaluate secret end-to-end encrypted chat latency, 2GB large file upload speed, and group poll creation.', 'proof', 1]
-      ];
-
       for (const t of DEFAULT_25_TASKS) {
         const [existing] = await pool.execute('SELECT id FROM task_library WHERE title=? LIMIT 1', [t[0]]);
         if (!existing.length) {
@@ -762,8 +763,20 @@ async function syncUserDailyTasks(conn, userId, plan = null) {
   const taskLimit = Number(plan.daily_task_count || 2);
   const unitReward = Number(plan.unit_reward || 59);
 
-  // Fetch all active tasks from task_library
-  const [libs] = await conn.execute('SELECT id FROM task_library WHERE active=1 ORDER BY id ASC');
+  // Fetch all active tasks from task_library (self-heal if empty)
+  let [libs] = await conn.execute('SELECT id FROM task_library WHERE active=1 ORDER BY id ASC');
+  if (!libs.length) {
+    for (const t of DEFAULT_25_TASKS) {
+      try {
+        await conn.execute(
+          'INSERT INTO task_library (title, category, app_icon, app_url, description, verification_type, active) VALUES (?,?,?,?,?,?,?)',
+          t
+        );
+      } catch (e) {}
+    }
+    const [freshLibs] = await conn.execute('SELECT id FROM task_library WHERE active=1 ORDER BY id ASC');
+    libs = freshLibs;
+  }
   if (!libs.length) return [];
 
   // Ensure daily_tasks entries exist for library items for today
@@ -1995,8 +2008,20 @@ app.get('/api/tasks/today', auth, async (req, res) => {
     const plan = await getActivePlan(conn, req.user.id);
     if (!plan) return res.status(404).json({ message: 'User plan profile not found' });
 
-    // Fetch full 25 tasks from library
-    const [library] = await conn.execute(`SELECT * FROM task_library WHERE active=1 ORDER BY id ASC`);
+    // Fetch full 25 tasks from library (self-heal if empty)
+    let [library] = await conn.execute(`SELECT * FROM task_library WHERE active=1 ORDER BY id ASC`);
+    if (!library.length) {
+      for (const t of DEFAULT_25_TASKS) {
+        try {
+          await conn.execute(
+            'INSERT INTO task_library (title, category, app_icon, app_url, description, verification_type, active) VALUES (?,?,?,?,?,?,?)',
+            t
+          );
+        } catch (e) {}
+      }
+      const [freshLib] = await conn.execute(`SELECT * FROM task_library WHERE active=1 ORDER BY id ASC`);
+      library = freshLib;
+    }
 
     if (plan.is_trial_expired) {
       return res.json({
