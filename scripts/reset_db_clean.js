@@ -103,10 +103,10 @@ export async function resetDatabaseClean() {
     const [adminResult] = await conn.query(
       `INSERT INTO users (
         id, full_name, email, password_hash, role, status, 
-        referral_code, referred_by, lucky_spins, failed_login_attempts
+        referral_code, referred_by
       ) VALUES (
         1, 'Faizan Admin', ?, ?, 'admin', 'active',
-        'ADMIN01', NULL, 0, 0
+        'ADMIN01', NULL
       )`,
       [targetEmail, adminPasswordHash]
     );
