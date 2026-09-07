@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import bcrypt from 'bcryptjs';
 import { pool } from '../server/db.js';
 
@@ -6,6 +8,33 @@ export async function resetDatabaseClean() {
   try {
     console.log('[RESET] Starting clean database reset...');
     await conn.query('SET FOREIGN_KEY_CHECKS = 0');
+
+    // 0. If users table does not exist, initialize from database/schema.sql
+    try {
+      const [tableRows] = await conn.query(`SHOW TABLES LIKE 'users'`);
+      if (tableRows.length === 0) {
+        console.log('[RESET] Database tables not found. Initializing from database/schema.sql...');
+        const schemaPath = path.resolve('database', 'schema.sql');
+        if (fs.existsSync(schemaPath)) {
+          const sql = fs.readFileSync(schemaPath, 'utf-8');
+          // Split statements by semicolon where appropriate
+          const statements = sql
+            .split(/;\s*$/m)
+            .map(s => s.trim())
+            .filter(s => s.length > 0 && !s.startsWith('--'));
+          for (const statement of statements) {
+            try {
+              await conn.query(statement);
+            } catch (err) {
+              // Ignore harmless duplicate key / table exists notices
+            }
+          }
+          console.log('[RESET] Successfully initialized schema from schema.sql.');
+        }
+      }
+    } catch (e) {
+      console.log('[RESET] Initial schema check notice:', e.message);
+    }
 
     // 1. Drop problematic unique index on user_plans if it exists
     try {
@@ -68,18 +97,18 @@ export async function resetDatabaseClean() {
     console.log('[RESET] Cleared users table.');
 
     // 5. Create ONLY 1 Admin account
-    // Email: faizan0687@gmail.com
-    // Password: Faizan@786
-    const adminPasswordHash = await bcrypt.hash('Faizan@786', 10);
+    const targetEmail = (process.env.BOOTSTRAP_ADMIN_EMAIL || 'faizan0687@gmail.com').trim().toLowerCase();
+    const targetPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'Faizan@786';
+    const adminPasswordHash = await bcrypt.hash(targetPassword, 10);
     const [adminResult] = await conn.query(
       `INSERT INTO users (
         id, full_name, email, password_hash, role, status, 
         referral_code, referred_by, lucky_spins, failed_login_attempts
       ) VALUES (
-        1, 'Faizan Admin', 'faizan0687@gmail.com', ?, 'admin', 'active',
+        1, 'Faizan Admin', ?, ?, 'admin', 'active',
         'ADMIN01', NULL, 0, 0
       )`,
-      [adminPasswordHash]
+      [targetEmail, adminPasswordHash]
     );
     const adminId = adminResult.insertId || 1;
 

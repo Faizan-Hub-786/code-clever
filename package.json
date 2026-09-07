@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "start": "node --max-old-space-size=384 server.js",
     "server": "node --max-old-space-size=384 server.js",
-    "client": "vite"
+    "client": "vite",
+    "db:reset": "node scripts/reset_db_clean.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
