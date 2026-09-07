@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
   failed_login_attempts INT UNSIGNED NOT NULL DEFAULT 0,
   security_question VARCHAR(255) NULL DEFAULT 'What was the name of your first school?',
   security_answer_hash VARCHAR(255) NULL,
+  root_leader_id BIGINT UNSIGNED NULL,
+  team_level ENUM('A','B','C') NULL,
+  referral_depth TINYINT UNSIGNED NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_users_referrer FOREIGN KEY (referred_by) REFERENCES users(id) ON DELETE SET NULL
@@ -44,7 +47,7 @@ CREATE TABLE IF NOT EXISTS user_plans (
   status ENUM('active','expired','cancelled') NOT NULL DEFAULT 'active',
   started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   expires_at DATETIME NULL,
-  UNIQUE KEY uq_active_user_plan (user_id, status),
+  KEY idx_user_plans_user_status (user_id, status),
   CONSTRAINT fk_user_plans_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_user_plans_plan FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
@@ -124,6 +127,8 @@ CREATE TABLE IF NOT EXISTS deposits (
   method ENUM('jazzcash','easypaisa','nayapay','sadapay') NOT NULL,
   amount DECIMAL(14,2) NOT NULL,
   transaction_reference VARCHAR(120) NOT NULL,
+  sender_name VARCHAR(120) NULL,
+  sender_number VARCHAR(80) NULL,
   proof_image LONGTEXT NULL,
   status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
   reviewed_by BIGINT UNSIGNED NULL,
@@ -360,4 +365,32 @@ CREATE TABLE IF NOT EXISTS support_inquiries (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_si_user (user_id),
   INDEX idx_si_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS export_history (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  export_date DATE NOT NULL,
+  export_time TIME NOT NULL,
+  total_users INT UNSIGNED NOT NULL DEFAULT 0,
+  total_leaders INT UNSIGNED NOT NULL DEFAULT 0,
+  count_a INT UNSIGNED NOT NULL DEFAULT 0,
+  count_b INT UNSIGNED NOT NULL DEFAULT 0,
+  count_c INT UNSIGNED NOT NULL DEFAULT 0,
+  file_type VARCHAR(10) NOT NULL DEFAULT 'xlsx',
+  file_path VARCHAR(500) NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS banned_credentials (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NULL,
+  email VARCHAR(190) NOT NULL,
+  phone VARCHAR(40) NULL,
+  full_name VARCHAR(120) NULL,
+  reason VARCHAR(255) DEFAULT 'Account deleted and blacklisted by administrator',
+  banned_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_banned_email (email),
+  INDEX idx_banned_phone (phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

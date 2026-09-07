@@ -31,6 +31,7 @@ import { API_BASE_URL } from '../api/config';
 import { setCachedWallet } from '../utils/walletCache';
 import AuthChatBot from '../components/auth/AuthChatBot';
 import SpiderWebCaptcha from '../components/auth/SpiderWebCaptcha';
+import AltchaWidget from '../components/common/AltchaWidget';
 
 const SECURITY_QUESTIONS = [
   "What is your childhood pet's name?",
@@ -48,6 +49,8 @@ export default function AuthPage({ mode = 'login' }) {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [altchaPayload, setAltchaPayload] = useState('');
+  const [altchaKey, setAltchaKey] = useState(0);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [form, setForm] = useState({
     name: '',
@@ -185,6 +188,10 @@ export default function AuthPage({ mode = 'login' }) {
         setError('You must accept the Terms & Conditions and Privacy Policy.');
         return;
       }
+      if (!altchaPayload) {
+        setError('Please complete the human verification before registering.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -197,7 +204,8 @@ export default function AuthPage({ mode = 'login' }) {
             email: form.email.trim(),
             phone: form.phone.trim(),
             password: form.password,
-            referralCode: form.referral.trim().toUpperCase()
+            referralCode: form.referral.trim().toUpperCase(),
+            altchaPayload
           }
         : {
             email: form.email.trim(),
@@ -231,11 +239,9 @@ export default function AuthPage({ mode = 'login' }) {
 
       if (d.token) {
         sessionStorage.setItem('cc_token', d.token);
-        localStorage.setItem('cc_token', d.token);
       }
       if (d.user) {
         sessionStorage.setItem('cc_user', JSON.stringify(d.user));
-        localStorage.setItem('cc_user', JSON.stringify(d.user));
       }
       if (d.wallet) {
         setCachedWallet({
@@ -249,6 +255,12 @@ export default function AuthPage({ mode = 'login' }) {
       nav('/home');
     } catch (err) {
       setError(err.message || 'Unable to connect to the server.');
+      if (isSignup) {
+        // ALTCHA challenges are single-use; give the member a fresh challenge
+        // when registration did not complete.
+        setAltchaPayload('');
+        setAltchaKey((key) => key + 1);
+      }
     } finally {
       setLoading(false);
     }
@@ -664,6 +676,8 @@ export default function AuthPage({ mode = 'login' }) {
                   <SpiderWebCaptcha onCaptchaChange={setActiveCaptcha} />
                 </div>
               )}
+
+              {isSignup && <AltchaWidget key={altchaKey} onVerify={setAltchaPayload} />}
 
               {/* Terms & Privacy Agreement Checkbox */}
               {isSignup && (

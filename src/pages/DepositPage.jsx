@@ -45,33 +45,37 @@ const PAYMENT_METHODS = [
   {
     id: 'jazzcash',
     name: 'JazzCash',
+    accountLabel: 'JazzCash Business Till',
     subtitle: 'Mobile Wallet',
     logo: '/assets/Wallets/jazzcash.svg',
     accountName: 'Code Clever Payments',
-    accountNumber: '0300-1234567'
+    accountNumber: '03254138875'
   },
   {
     id: 'sadapay',
     name: 'SadaPay',
+    accountLabel: 'SadaPay Account',
     subtitle: 'Digital Wallet',
     logo: '/assets/Wallets/sadapay.svg',
     accountName: 'Code Clever Treasury',
-    accountNumber: '0300-9876543'
+    accountNumber: '03254138875'
   },
   {
     id: 'easypaisa',
     name: 'Easypaisa',
+    accountLabel: 'Easypaisa Mobile Account',
     subtitle: 'Mobile Wallet',
     logo: '/assets/Wallets/easypaisa.svg',
-    accountName: 'Code Clever Payments',
-    accountNumber: '0345-1234567'
+    accountName: 'Code Clever Finance',
+    accountNumber: '03451234567'
   },
   {
     id: 'nayapay',
     name: 'NayaPay',
+    accountLabel: 'NayaPay Wallet ID',
     subtitle: 'Digital Wallet',
     logo: '/assets/Wallets/nayapay.svg',
-    accountName: 'Code Clever Finance',
+    accountName: 'Code Clever Operations',
     accountNumber: '@codeclever'
   }
 ];
@@ -102,7 +106,10 @@ export default function DepositPage() {
 
   const loadPaymentMethods = async () => {
     try {
-      const r = await fetch(`${API_BASE_URL}/payment-methods`);
+      const r = await fetch(`${API_BASE_URL}/payment-methods?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       if (r.ok) {
         const d = await r.json();
         if (Array.isArray(d) && d.length > 0) {
@@ -142,6 +149,9 @@ export default function DepositPage() {
     loadWallet();
     loadRecentDeposits();
 
+    const handleBankUpdate = () => loadPaymentMethods();
+    window.addEventListener('cc_bank_updated', handleBankUpdate);
+
     fetch(`${API_BASE_URL}/site-settings`)
       .then((r) => (r.ok ? r.json() : {}))
       .then((d) => {
@@ -152,6 +162,10 @@ export default function DepositPage() {
         }
       })
       .catch(() => {});
+
+    return () => {
+      window.removeEventListener('cc_bank_updated', handleBankUpdate);
+    };
   }, []);
 
   // 5-minute countdown timer on Step 2

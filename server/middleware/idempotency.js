@@ -48,7 +48,8 @@ export function idempotencyMiddleware(req, res, next) {
   // Intercept response
   const originalJson = res.json.bind(res);
   res.json = (body) => {
-    if (res.statusCode >= 200 && res.statusCode < 300) {
+    const hasExplicitKey = req.headers['idempotency-key'] || req.body?.idempotencyKey || req.body?.transaction_reference;
+    if (res.statusCode >= 200 && res.statusCode < 300 && hasExplicitKey) {
       idempotencyStore.set(idempotencyKey, {
         status: 'completed',
         statusCode: res.statusCode,
@@ -56,11 +57,15 @@ export function idempotencyMiddleware(req, res, next) {
         expiresAt: Date.now() + IDEMPOTENCY_TTL_MS
       });
     } else {
-      // If error occurred, remove key so user can retry safely
+      // Release in-flight lock if finished or on error, allowing subsequent distinct actions
       idempotencyStore.delete(idempotencyKey);
     }
     return originalJson(body);
   };
 
   next();
+}
+
+export function clearIdempotencyStore() {
+  idempotencyStore.clear();
 }

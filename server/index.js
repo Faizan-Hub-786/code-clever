@@ -8,16 +8,25 @@ import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
+import dns from 'dns/promises';
+import net from 'net';
 import 'dotenv/config';
 import { pool, closePool } from './db.js';
 import { uploadImageBufferToCloudinary } from './services/cloudinary.js';
 import { createAltchaChallenge, verifyAltchaPayload } from './services/altcha.js';
-import { idempotencyMiddleware } from './middleware/idempotency.js';
+import { idempotencyMiddleware, clearIdempotencyStore } from './middleware/idempotency.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// A predictable development secret keeps local setup convenient, but production
+// must never silently fall back to a known credential.
+const jwtSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'codeclever-development-only-secret');
+if (!jwtSecret) {
+  throw new Error('JWT_SECRET must be configured when NODE_ENV=production.');
+}
 
 // Security Headers with Helmet
 app.use(helmet({
@@ -65,6 +74,16 @@ const sensitiveLimiter = rateLimit({
 
 app.use(express.json({ limit: '10mb' }));
 
+// Authentication and account-recovery endpoints are intentionally stricter
+// than the general API limit without affecting normal authenticated usage.
+app.use([
+  '/api/auth/register',
+  '/api/auth/login',
+  '/api/auth/admin-login',
+  '/api/auth/get-security-question',
+  '/api/auth/forgot-password'
+], sensitiveLimiter);
+
 // ----------------- HEALTH CHECK (Render / UptimeRobot) -----------------
 app.get('/health', async (req, res) => {
   let dbStatus = 'ok';
@@ -107,7 +126,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-app.post('/api/upload', upload.single('file'), async (req, res) => {
+app.post('/api/upload', auth, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file provided for upload.' });
   }
@@ -131,7 +150,7 @@ function auth(req, res, next) {
   const token = h.startsWith('Bearer ') ? h.slice(7) : null;
   if (!token) return res.status(401).json({ message: 'Authentication required' });
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    req.user = jwt.verify(token, jwtSecret);
     next();
   } catch {
     return res.status(401).json({ message: 'Invalid session' });
@@ -141,8 +160,7 @@ function auth(req, res, next) {
 async function adminOnly(req, res, next) {
   try {
     const [[u]] = await pool.execute(`SELECT id, full_name, email, role, status FROM users WHERE id=?`, [req.user.id]);
-    const allowedAdminEmails = ['faizanbarvi786@gmail.com', 'faizan0687@gmail.com'];
-    if (!u || u.status !== 'active' || u.role !== 'admin' || !allowedAdminEmails.includes(String(u.email || '').trim().toLowerCase())) {
+    if (!u || u.status !== 'active' || u.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied: Administrator privileges required.' });
     }
     req.admin = u;
@@ -511,27 +529,21 @@ async function initDatabase() {
     // Ensure app_icon in task_library is LONGTEXT
     await pool.execute(`ALTER TABLE task_library MODIFY COLUMN app_icon LONGTEXT NULL`).catch(() => {});
 
-    // Ensure Master Administrator user account (faizanbarvi786@gmail.com / Faizan@0687)
-    const adminEmail = 'faizanbarvi786@gmail.com';
-    const adminPass = 'Faizan@0687';
-    const adminHash = await bcrypt.hash(adminPass, 10);
-    
-    const [[existingAdmin]] = await pool.execute(`SELECT id FROM users WHERE email = ?`, [adminEmail]);
-    if (!existingAdmin) {
-      const [u] = await pool.execute(`
-        INSERT INTO users (full_name, email, password_hash, referral_code, role, status)
-        VALUES ('Faizan (Admin)', ?, ?, 'ADMIN01', 'admin', 'active')
-      `, [adminEmail, adminHash]);
-      await pool.execute(`INSERT IGNORE INTO wallets (user_id) VALUES (?)`, [u.insertId]);
-      await pool.execute(`INSERT IGNORE INTO user_spins (user_id, bonus_spins) VALUES (?, 999)`, [u.insertId]);
-    } else {
-      await pool.execute(`
-        UPDATE users
-        SET password_hash = ?, role = 'admin', status = 'active'
-        WHERE id = ?
-      `, [adminHash, existingAdmin.id]);
-      await pool.execute(`INSERT IGNORE INTO wallets (user_id) VALUES (?)`, [existingAdmin.id]);
-      await pool.execute(`INSERT IGNORE INTO user_spins (user_id, bonus_spins) VALUES (?, 999)`, [existingAdmin.id]);
+    // Bootstrap is opt-in and only creates a missing account.  Runtime startup
+    // must not reset an administrator password or elevate an existing user.
+    const bootstrapAdminEmail = String(process.env.BOOTSTRAP_ADMIN_EMAIL || '').trim().toLowerCase();
+    const bootstrapAdminPassword = String(process.env.BOOTSTRAP_ADMIN_PASSWORD || '');
+    if (bootstrapAdminEmail && bootstrapAdminPassword) {
+      const [[existingAdmin]] = await pool.execute(`SELECT id FROM users WHERE email = ?`, [bootstrapAdminEmail]);
+      if (!existingAdmin) {
+        const adminHash = await bcrypt.hash(bootstrapAdminPassword, 12);
+        const referralCode = `ADMIN${Date.now().toString(36).toUpperCase()}`.slice(0, 32);
+        const [u] = await pool.execute(`
+          INSERT INTO users (full_name, email, password_hash, referral_code, role, status)
+          VALUES ('Bootstrap Administrator', ?, ?, ?, 'admin', 'active')
+        `, [bootstrapAdminEmail, adminHash, referralCode]);
+        await pool.execute(`INSERT IGNORE INTO wallets (user_id) VALUES (?)`, [u.insertId]);
+      }
     }
   } catch (e) {
     console.warn('Auto DB init notice:', e.message);
@@ -579,6 +591,17 @@ async function backfillTeamLevels() {
         currentAncestor = parentUser?.referred_by || null;
       }
     }
+
+    // 3. Compute and store root_leader_id, team_level, and referral_depth on users table
+    for (const u of allUsers) {
+      const teamInfo = await computeTeamLevel(pool, u.id, u.referred_by);
+      if (teamInfo) {
+        await pool.execute(
+          `UPDATE users SET root_leader_id=?, team_level=?, referral_depth=? WHERE id=?`,
+          [teamInfo.rootLeaderId, teamInfo.teamLevel, teamInfo.depth, u.id]
+        );
+      }
+    }
   } catch (e) {
     console.warn('[Backfill] Error:', e.message);
   }
@@ -589,23 +612,19 @@ async function backfillTeamLevels() {
 async function computeTeamLevel(dbOrConn, newUserId, directSponsorId) {
   if (!directSponsorId) return null;
   try {
-    // Walk UP from sponsor to find the root leader (user with no referred_by OR depth 0)
-    // We also check what team_level the sponsor holds
     const [[sponsor]] = await dbOrConn.execute(
-      `SELECT id, referred_by, root_leader_id, team_level, referral_depth FROM users WHERE id=?`,
+      `SELECT id, role, referred_by, root_leader_id, team_level, referral_depth FROM users WHERE id=?`,
       [directSponsorId]
     );
     if (!sponsor) return null;
 
-    // Case 1: Sponsor has NO referred_by → sponsor IS the root leader
-    //         New user = Level A under sponsor
-    if (!sponsor.referred_by) {
+    // Case 1: Sponsor is platform admin OR has no referred_by → sponsor IS the root leader
+    // New user is Level A (depth 1) directly under sponsor
+    if (sponsor.role === 'admin' || !sponsor.referred_by) {
       return { rootLeaderId: sponsor.id, teamLevel: 'A', depth: 1 };
     }
 
-    // Case 2: Sponsor is already a root leader (team_level is null but has referrals)
-    //         i.e. sponsor.root_leader_id is null AND sponsor.referred_by is null → handled above
-    //         Sponsor has root_leader_id → determine new user's level from sponsor's level
+    // Case 2: Sponsor already has root_leader_id & team_level assigned
     if (sponsor.root_leader_id) {
       if (sponsor.team_level === 'A') {
         return { rootLeaderId: sponsor.root_leader_id, teamLevel: 'B', depth: 2 };
@@ -614,36 +633,35 @@ async function computeTeamLevel(dbOrConn, newUserId, directSponsorId) {
         return { rootLeaderId: sponsor.root_leader_id, teamLevel: 'C', depth: 3 };
       }
       if (sponsor.team_level === 'C') {
-        // Sponsor is C → new user gets NO team level under root leader (beyond 3 levels)
-        // But new user's OWN root_leader_id should be set to null (they start a new chain or are unattached)
-        return null;
+        // Beyond Level 3 under root leader → starts a new sub-team with direct sponsor as leader
+        return { rootLeaderId: sponsor.id, teamLevel: 'A', depth: 1 };
       }
     }
 
-    // Case 3: Sponsor has referred_by but no root_leader_id yet → sponsor itself is an A-level under their sponsor
-    //         Treat sponsor as A → new user is B
-    // Walk up once more
+    // Case 3: Sponsor has referred_by, walk up to resolve root leader
     const [[grandSponsor]] = await dbOrConn.execute(
-      `SELECT id, referred_by FROM users WHERE id=?`,
+      `SELECT id, role, referred_by, root_leader_id, team_level FROM users WHERE id=?`,
       [sponsor.referred_by]
     );
-    if (!grandSponsor) return null;
+    if (!grandSponsor) {
+      return { rootLeaderId: sponsor.id, teamLevel: 'A', depth: 1 };
+    }
 
-    // Sponsor is A under grandSponsor
-    if (!grandSponsor.referred_by) {
+    if (grandSponsor.role === 'admin' || !grandSponsor.referred_by) {
+      // Sponsor is A under grandSponsor, so new user is B under grandSponsor
       return { rootLeaderId: grandSponsor.id, teamLevel: 'B', depth: 2 };
     }
 
-    // Sponsor is B under some leader → new user is C
     const [[greatGrand]] = await dbOrConn.execute(
-      `SELECT id, referred_by FROM users WHERE id=?`,
+      `SELECT id, role, referred_by FROM users WHERE id=?`,
       [grandSponsor.referred_by]
     );
-    if (!greatGrand || greatGrand.referred_by) {
-      // Too deep or unknown → no team level
-      return null;
+    if (greatGrand && (greatGrand.role === 'admin' || !greatGrand.referred_by)) {
+      // Sponsor is B under greatGrand, so new user is C under greatGrand
+      return { rootLeaderId: greatGrand.id, teamLevel: 'C', depth: 3 };
     }
-    return { rootLeaderId: greatGrand.id, teamLevel: 'C', depth: 3 };
+
+    return { rootLeaderId: sponsor.id, teamLevel: 'A', depth: 1 };
   } catch (e) {
     console.error('computeTeamLevel error:', e.message);
     return null;
@@ -807,7 +825,16 @@ async function recordReferralChain(conn, newUserId, directReferrerId) {
     const [[newUser]] = await conn.execute(`SELECT id, full_name, email FROM users WHERE id=?`, [newUserId]);
     const newUserName = newUser?.full_name || 'A new member';
 
-    // Walk up up to 3 generations from directReferrerId
+    // 1. Compute and store root_leader_id, team_level, and referral_depth on users table
+    const teamInfo = await computeTeamLevel(conn, newUserId, directReferrerId);
+    if (teamInfo) {
+      await conn.execute(
+        `UPDATE users SET root_leader_id=?, team_level=?, referral_depth=? WHERE id=?`,
+        [teamInfo.rootLeaderId, teamInfo.teamLevel, teamInfo.depth, newUserId]
+      );
+    }
+
+    // 2. Walk up up to 3 generations from directReferrerId
     // Level 1: direct sponsor (Level A of directReferrerId)
     // Level 2: sponsor's sponsor (Level B of that sponsor)
     // Level 3: sponsor of Level 2 (Level C of that sponsor)
@@ -998,7 +1025,7 @@ app.get('/api/auth/verify-invitation/:code', async (req, res) => {
 });
 
 app.post('/api/auth/register', async (req, res) => {
-  const { fullName, email, phone, password, referralCode, securityQuestion, securityAnswer } = req.body;
+  const { fullName, email, phone, password, referralCode, invitationCode, securityQuestion, securityAnswer, altchaPayload } = req.body;
   const cleanFullName = String(fullName || '').trim();
   const cleanEmail = String(email || '').trim().toLowerCase();
   const cleanPhone = String(phone || '').replace(/[\s\-\(\)]/g, '').trim();
@@ -1013,6 +1040,10 @@ app.post('/api/auth/register', async (req, res) => {
   }
   if (String(password).length < 8) {
     return res.status(400).json({ message: 'Password must be at least 8 characters.' });
+  }
+  const altcha = verifyAltchaPayload(altchaPayload);
+  if (!altcha.verified) {
+    return res.status(400).json({ message: altcha.message || 'Complete human verification before registering.' });
   }
   const [[regSetting]] = await pool.execute(`SELECT value_json FROM site_settings WHERE setting_key='new_registrations' LIMIT 1`);
   if (regSetting && regSetting.value_json === 'false') {
@@ -1074,7 +1105,7 @@ app.post('/api/auth/register', async (req, res) => {
     const isFirstUser = Number(userCount?.c || 0) === 0;
 
     let referrerId = null;
-    const cleanRefCode = String(referralCode || '').trim().toUpperCase();
+    const cleanRefCode = String(referralCode || invitationCode || '').trim().toUpperCase();
 
     // STRICT INVITATION CODE ENFORCEMENT & VERIFICATION:
     if (!isFirstUser) {
@@ -1145,7 +1176,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     const token = jwt.sign(
       { id: u.insertId, email: cleanEmail, role },
-      process.env.JWT_SECRET || 'secret',
+      jwtSecret,
       { expiresIn: '7d' }
     );
 
@@ -1201,8 +1232,8 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password. Please try again.' });
     }
 
-    // If maintenance mode is active, only master admin faizanbarvi786@gmail.com can log in!
-    if (isMaintenance && u.role !== 'admin' && cleanEmail !== 'faizanbarvi786@gmail.com') {
+    // Administrators retain access during maintenance; membership is role-based.
+    if (isMaintenance && u.role !== 'admin') {
       return res.status(503).json({
         maintenance: true,
         message: 'Code Clever is currently under scheduled maintenance and system upgrades. Public member access is temporarily paused. Please check back shortly.'
@@ -1213,7 +1244,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(403).json({ message: 'Account is suspended or pending activation.' });
     }
     await pool.execute(`UPDATE users SET last_login_at=NOW() WHERE id=?`, [u.id]);
-    const token = jwt.sign({ id: u.id, email: u.email, role: u.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ id: u.id, email: u.email, role: u.role }, jwtSecret, { expiresIn: '7d' });
 
     // Fetch immediate wallet & plan snapshot for 0ms render without secondary roundtrip
     const [[walletRow]] = await pool.execute('SELECT available_balance, commission_balance, lifetime_earned, pending_balance FROM wallets WHERE user_id=?', [u.id]);
@@ -1268,8 +1299,6 @@ app.post('/api/auth/admin-login', async (req, res) => {
     const { email, password } = req.body;
     const cleanEmail = String(email || '').trim().toLowerCase();
 
-    const allowedAdminEmails = ['faizan0687@gmail.com', 'faizanbarvi786@gmail.com'];
-
     const [rows] = await pool.execute(
       'SELECT id, full_name, email, password_hash, status, referral_code, role FROM users WHERE email=?',
       [cleanEmail]
@@ -1279,7 +1308,7 @@ app.post('/api/auth/admin-login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid admin credentials. Account not found.' });
     }
 
-    if (u.role !== 'admin' && !allowedAdminEmails.includes(cleanEmail)) {
+    if (u.role !== 'admin') {
       return res.status(403).json({ message: 'Access Denied: Administrator privileges required.' });
     }
 
@@ -1291,13 +1320,8 @@ app.post('/api/auth/admin-login', async (req, res) => {
       return res.status(403).json({ message: 'Administrator account is not in active status.' });
     }
 
-    if (u.role !== 'admin') {
-      await pool.execute(`UPDATE users SET role='admin' WHERE id=?`, [u.id]);
-      u.role = 'admin';
-    }
-
     await pool.execute(`UPDATE users SET last_login_at=NOW() WHERE id=?`, [u.id]);
-    const token = jwt.sign({ id: u.id, email: u.email, role: 'admin' }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ id: u.id, email: u.email, role: 'admin' }, jwtSecret, { expiresIn: '7d' });
 
     res.json({
       ok: true,
@@ -1649,7 +1673,7 @@ app.get('/api/settings/fund-password-status', auth, async (req, res) => {
   }
 });
 
-app.post('/api/settings/fund-password', auth, async (req, res) => {
+app.post('/api/settings/fund-password', auth, sensitiveLimiter, async (req, res) => {
   const { currentFundPassword, newFundPassword, accountPassword } = req.body;
   const newPin = String(newFundPassword || '').trim();
 
@@ -1692,7 +1716,9 @@ app.post('/api/settings/fund-password', auth, async (req, res) => {
     }
 
     const pinHash = await bcrypt.hash(newPin, 10);
-    const data = JSON.stringify({ pin: newPin, pinHash, updatedAt: new Date().toISOString() });
+    // Persist only a password hash. Existing legacy plaintext pins remain
+    // readable for a one-time migration path below, but are never written again.
+    const data = JSON.stringify({ pinHash, updatedAt: new Date().toISOString() });
     await pool.execute(
       `INSERT INTO user_settings(user_id, setting_key, settings_json)
        VALUES(?, 'fund_password', ?)
@@ -1710,7 +1736,7 @@ app.post('/api/settings/fund-password', auth, async (req, res) => {
   }
 });
 
-app.put('/api/settings/password', auth, async (req, res) => {
+app.put('/api/settings/password', auth, sensitiveLimiter, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (String(newPassword || '').length < 8) {
     return res.status(400).json({ message: 'New password must be at least 8 characters.' });
@@ -1725,7 +1751,7 @@ app.put('/api/settings/password', auth, async (req, res) => {
   res.json({ ok: true, message: 'Password changed successfully.' });
 });
 
-app.post('/api/settings/security', auth, async (req, res) => {
+app.post('/api/settings/security', auth, sensitiveLimiter, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (String(newPassword || '').length < 8) {
     return res.status(400).json({ message: 'New password must be at least 8 characters.' });
@@ -1752,7 +1778,7 @@ app.get('/api/settings/security-question', auth, async (req, res) => {
   }
 });
 
-app.post('/api/settings/security-question', auth, async (req, res) => {
+app.post('/api/settings/security-question', auth, sensitiveLimiter, async (req, res) => {
   const { question, answer, accountPassword } = req.body;
   const cleanQuestion = String(question || '').trim();
   const cleanAnswer = String(answer || '').trim().toLowerCase();
@@ -1842,7 +1868,7 @@ app.get('/api/plans', auth, async (req, res) => {
   }
 });
 
-app.post('/api/plans/activate', auth, async (req, res) => {
+app.post('/api/plans/activate', auth, idempotencyMiddleware, async (req, res) => {
   const code = String(req.body.planCode || '').trim().toUpperCase();
   const conn = await pool.getConnection();
   try {
@@ -2035,7 +2061,7 @@ app.get('/api/tasks/today', auth, async (req, res) => {
   }
 });
 
-app.post('/api/tasks/:assignmentId/evaluate', auth, async (req, res) => {
+app.post('/api/tasks/:assignmentId/evaluate', auth, idempotencyMiddleware, async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -2214,7 +2240,7 @@ app.post('/api/tasks/:assignmentId/submit', auth, async (req, res) => {
   res.json({ ok: true, message: 'Task submitted for verification' });
 });
 
-app.post('/api/tasks/:assignmentId/complete', auth, async (req, res) => {
+app.post('/api/tasks/:assignmentId/complete', auth, idempotencyMiddleware, async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -2388,7 +2414,7 @@ app.get('/api/team', auth, async (req, res) => {
     const requireActivePlanToRefer = settingRow ? (settingRow.value_json === 'true' || settingRow.value_json === true) : true;
     
     // Master admin always has referral sharing enabled
-    const isMasterAdmin = (user.role === 'admin' || req.user.role === 'admin' || String(user.email || '').toLowerCase() === 'faizanbarvi786@gmail.com');
+    const isMasterAdmin = user.role === 'admin' || req.user.role === 'admin';
     const canShareReferral = isMasterAdmin || !requireActivePlanToRefer || Boolean(hasActivePaidPlan);
 
     let activeRefCode = user.referral_code;
@@ -2616,7 +2642,7 @@ app.get('/api/withdrawals/my', auth, async (req, res) => {
   }
 });
 
-app.post('/api/deposits', auth, async (req, res) => {
+app.post('/api/deposits', auth, idempotencyMiddleware, async (req, res) => {
   const { method, amount, transactionReference, txId, reference, proofImage, senderName, senderNumber, packageCode } = req.body;
   const numAmount = Number(amount);
   const cleanMethod = String(method || 'jazzcash').toLowerCase().replace(/_\d+$/, '');
@@ -2673,7 +2699,7 @@ app.post('/api/deposits', auth, async (req, res) => {
   }
 });
 
-app.post('/api/withdrawals', auth, async (req, res) => {
+app.post('/api/withdrawals', auth, idempotencyMiddleware, async (req, res) => {
   const { method, amount, accountName, accountTitle, accountNumber, fundPassword, walletType } = req.body;
   const numAmount = Number(amount);
   const cleanMethod = String(method || 'jazzcash').toLowerCase().replace(/_\d+$/, '');
@@ -2686,10 +2712,29 @@ app.post('/api/withdrawals', auth, async (req, res) => {
   if (!accNum) {
     return res.status(400).json({ message: 'Account number or IBAN is required.' });
   }
+  if (!/^\d{6}$/.test(String(fundPassword || '').trim())) {
+    return res.status(400).json({ message: 'Enter your 6-digit Fund Password to request a withdrawal.' });
+  }
 
   const [[setting]] = await pool.execute(`SELECT value_json FROM site_settings WHERE setting_key='withdrawals_enabled' LIMIT 1`);
   if (setting?.value_json === 'false') {
     return res.status(403).json({ message: 'Withdrawals are temporarily disabled by the administrator.' });
+  }
+
+  // Verify the separate fund password before funds are reserved.  Support old
+  // records containing `pin` only long enough for users to update their PIN.
+  const [[fundPasswordRow]] = await pool.execute(
+    `SELECT settings_json FROM user_settings WHERE user_id=? AND setting_key='fund_password'`,
+    [req.user.id]
+  );
+  let fundPasswordConfig = null;
+  try { fundPasswordConfig = fundPasswordRow?.settings_json ? JSON.parse(fundPasswordRow.settings_json) : null; } catch {}
+  const submittedFundPassword = String(fundPassword).trim();
+  const validFundPassword = fundPasswordConfig?.pinHash
+    ? await bcrypt.compare(submittedFundPassword, fundPasswordConfig.pinHash)
+    : Boolean(fundPasswordConfig?.pin && submittedFundPassword === String(fundPasswordConfig.pin));
+  if (!validFundPassword) {
+    return res.status(403).json({ message: 'Fund Password is incorrect or has not been configured.' });
   }
 
   const conn = await pool.getConnection();
@@ -2814,7 +2859,7 @@ app.get('/api/wheel/history', auth, async (req, res) => {
   }
 });
 
-app.post('/api/wheel/spin', auth, async (req, res) => {
+app.post('/api/wheel/spin', auth, idempotencyMiddleware, async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -3404,10 +3449,13 @@ async function autoResetUserPasswordFromAdminMessage(rawMessage, targetEmail = n
     const tempPassword = match[1].replace(/[.,;:!]+$/, '').trim();
     if (!tempPassword || tempPassword.length < 4) return;
 
-    let userId = targetUserId;
-    if (!userId && targetEmail) {
+    let userId = null;
+    if (targetEmail) {
       const [[u]] = await pool.execute('SELECT id FROM users WHERE email = ?', [String(targetEmail).trim().toLowerCase()]);
       if (u) userId = u.id;
+    }
+    if (!userId && targetUserId) {
+      userId = targetUserId;
     }
 
     if (userId) {
@@ -3609,7 +3657,7 @@ app.post('/api/admin/system/reset-all-data-except-admin', auth, adminOnly, async
 
     // 3. Delete all non-admin users
     const [delUsers] = await conn.query(
-      `DELETE FROM users WHERE id != ? AND role != 'admin' AND email != 'faizanbarvi786@gmail.com'`,
+      `DELETE FROM users WHERE id != ? AND role != 'admin'`,
       [req.user.id]
     );
 
@@ -3622,11 +3670,12 @@ app.post('/api/admin/system/reset-all-data-except-admin', auth, adminOnly, async
     // 5. Ensure admin wallet exists and has clean zero baseline
     const [[adminWallet]] = await conn.query(`SELECT id FROM wallets WHERE user_id = ?`, [req.user.id]);
     if (!adminWallet) {
-      await conn.query(`INSERT INTO wallets (user_id, balance, total_earned, lifetime_earned) VALUES (?, 0, 0, 0)`, [req.user.id]);
+      await conn.query(`INSERT INTO wallets (user_id, available_balance, commission_balance, pending_balance, lifetime_earned) VALUES (?, 0, 0, 0, 0)`, [req.user.id]);
     }
 
     await conn.commit();
     await conn.query('SET FOREIGN_KEY_CHECKS = 1');
+    clearIdempotencyStore();
 
     console.log(`[SYSTEM RESET] Purged ${delUsers.affectedRows} non-admin users and all transaction datasets. Master admin #${req.user.id} preserved.`);
 
@@ -3801,6 +3850,7 @@ app.get('/api/admin/team/hierarchy', auth, adminOnly, async (req, res) => {
       SELECT
         u.id, u.full_name, u.phone, u.email,
         u.referred_by, u.status, u.created_at,
+        u.team_level, u.root_leader_id, u.referral_depth,
         ref.full_name AS referrer_name,
         COALESCE(w.lifetime_earned, 0) AS total_earned,
         COALESCE((SELECT SUM(amount) FROM team_reward_ledger WHERE user_id = u.id), 0) AS team_earnings,
@@ -3834,11 +3884,11 @@ app.get('/api/admin/team/hierarchy', auth, adminOnly, async (req, res) => {
         fullName: u.full_name,
         phone: u.phone || 'No phone',
         email: u.email,
-        teamLevel: null,
-        rootLeaderId: u.referred_by || null,
+        teamLevel: u.team_level || null,
+        rootLeaderId: u.root_leader_id || u.referred_by || null,
         rootLeaderName: u.referrer_name || null,
         referrerName: u.referrer_name || null,
-        referralDepth: 0,
+        referralDepth: Number(u.referral_depth || 0),
         status: u.status,
         createdAt: u.created_at,
         totalEarned: Number(u.total_earned || 0),
@@ -4365,7 +4415,7 @@ const deleteAndBlacklistUserHandler = async (req, res) => {
       await conn.rollback();
       return res.status(404).json({ message: 'User not found.' });
     }
-    if (targetUser.role === 'admin' || String(targetUser.email || '').toLowerCase() === 'faizanbarvi786@gmail.com') {
+    if (targetUser.role === 'admin') {
       await conn.rollback();
       return res.status(403).json({ message: 'Master Administrator account cannot be deleted.' });
     }
@@ -4584,46 +4634,9 @@ app.post('/api/admin/plans/:id/toggle', auth, adminOnly, async (req, res) => {
   res.json({ ok: true, message: 'Plan availability updated.' });
 });
 
-app.post('/api/admin/tasks/generate', auth, adminOnly, async (_req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-    const [[pause]] = await conn.execute(`SELECT value_json FROM site_settings WHERE setting_key='task_assignments_paused' LIMIT 1`);
-    if (pause?.value_json === 'true') {
-      await conn.rollback();
-      return res.status(409).json({ message: 'Task assignments are paused.' });
-    }
-    const [plans] = await conn.execute(`SELECT * FROM plans WHERE active=1`);
-    const [libs] = await conn.execute(`SELECT id FROM task_library WHERE active=1 ORDER BY id`);
-    for (const p of plans) {
-      const [users] = await conn.execute(`SELECT user_id FROM user_plans WHERE plan_id=? AND status='active'`, [p.id]);
-      const limit = Math.min(Number(p.daily_task_count), libs.length);
-      for (const u of users) {
-        for (let i = 0; i < limit; i++) {
-          await conn.execute(`INSERT INTO daily_tasks(task_date, task_library_id) VALUES(CURDATE(),?) ON DUPLICATE KEY UPDATE active=active`, [libs[i].id]);
-          const [[dt]] = await conn.execute(`SELECT id FROM daily_tasks WHERE task_date=CURDATE() AND task_library_id=?`, [libs[i].id]);
-          await conn.execute(`INSERT INTO user_task_assignments(user_id, daily_task_id, plan_id, reward) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE reward=VALUES(reward)`, [u.user_id, dt.id, p.id, p.unit_reward]);
-        }
-      }
-    }
-    await conn.commit();
-    res.json({ ok: true, message: 'Daily tasks generated for active plans.' });
-  } catch (e) {
-    await conn.rollback();
-    res.status(500).json({ message: 'Task generation failed.' });
-  } finally {
-    conn.release();
-  }
-});
-
 app.post('/api/admin/tasks/refresh', auth, adminOnly, async (_req, res) => {
   await pool.execute(`UPDATE daily_tasks SET active=0 WHERE task_date=CURDATE()`);
   res.json({ ok: true, message: 'Today’s task pool refreshed.' });
-});
-
-app.post('/api/admin/tasks/pause', auth, adminOnly, async (req, res) => {
-  await pool.execute(`INSERT INTO site_settings(setting_key, value_json, updated_by) VALUES('task_assignments_paused','true',?) ON DUPLICATE KEY UPDATE value_json='true', updated_by=VALUES(updated_by)`, [req.user.id]);
-  res.json({ ok: true, message: 'New task assignments paused.' });
 });
 
 app.get('/api/admin/tasks/review', auth, adminOnly, async (_req, res) => {
@@ -5406,11 +5419,83 @@ const FALLBACK_PAYMENT_METHODS = [
   }
 ];
 
+const MAX_PROXY_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function isPrivateAddress(address) {
+  if (net.isIP(address) === 4) {
+    const [a, b] = address.split('.').map(Number);
+    return a === 10 || a === 127 || a === 0 || a >= 224 ||
+      (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168);
+  }
+  const normalized = String(address || '').toLowerCase();
+  return normalized === '::1' || normalized === '::' || normalized.startsWith('fe80:') || normalized.startsWith('fc') || normalized.startsWith('fd');
+}
+
+async function validateProxyImageUrl(value) {
+  let parsed;
+  try { parsed = new URL(String(value || '').trim()); } catch { throw new Error('A valid image URL is required.'); }
+  if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) {
+    throw new Error('Only public HTTP(S) image URLs are allowed.');
+  }
+  if (parsed.port && !['80', '443'].includes(parsed.port)) throw new Error('This image URL uses an unsupported port.');
+  const host = parsed.hostname.toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || isPrivateAddress(host)) {
+    throw new Error('Private network image URLs are not allowed.');
+  }
+  const records = await dns.lookup(host, { all: true, verbatim: true });
+  if (!records.length || records.some((record) => isPrivateAddress(record.address))) {
+    throw new Error('Private network image URLs are not allowed.');
+  }
+  return parsed;
+}
+
+async function fetchProxyImage(initialUrl) {
+  let current = initialUrl;
+  for (let redirects = 0; redirects <= 3; redirects++) {
+    const response = await fetch(current, {
+      redirect: 'manual',
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'CodeCleverImageProxy/1.0' }
+    });
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get('location');
+      if (!location || redirects === 3) throw new Error('Image URL redirected too many times.');
+      current = await validateProxyImageUrl(new URL(location, current).toString());
+      continue;
+    }
+    return response;
+  }
+  throw new Error('Image URL redirected too many times.');
+}
+
+async function readProxyImageBody(response) {
+  if (!response.body) throw new Error('Image response has no body.');
+  const reader = response.body.getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_PROXY_IMAGE_BYTES) {
+        await reader.cancel();
+        throw new Error('Image is too large');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk)), size);
+}
+
 app.get('/api/proxy-image', async (req, res) => {
   try {
     const rawUrl = req.query.url;
     if (!rawUrl) return res.status(400).send('URL required');
-    let url = rawUrl.trim();
+    let url = String(rawUrl).trim();
 
     if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
       const fileIdMatch =
@@ -5422,11 +5507,7 @@ app.get('/api/proxy-image', async (req, res) => {
       }
     }
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
-    });
+    const response = await fetchProxyImage(await validateProxyImageUrl(url));
 
     if (!response.ok) {
       if (rawUrl.includes('drive.google.com')) {
@@ -5435,9 +5516,11 @@ app.get('/api/proxy-image', async (req, res) => {
           rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
           rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
-          const fallbackRes = await fetch(`https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`);
+          const fallbackRes = await fetchProxyImage(await validateProxyImageUrl(`https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`));
           if (fallbackRes.ok) {
-            const buffer = await fallbackRes.arrayBuffer();
+            if (!String(fallbackRes.headers.get('content-type') || '').toLowerCase().startsWith('image/')) return res.status(415).send('URL did not return an image');
+            if (Number(fallbackRes.headers.get('content-length') || 0) > MAX_PROXY_IMAGE_BYTES) return res.status(413).send('Image is too large');
+            const buffer = await readProxyImageBody(fallbackRes);
             res.setHeader('Content-Type', fallbackRes.headers.get('content-type') || 'image/png');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             return res.send(Buffer.from(buffer));
@@ -5447,8 +5530,12 @@ app.get('/api/proxy-image', async (req, res) => {
       return res.status(response.status).send('Failed to load image');
     }
 
-    const buffer = await response.arrayBuffer();
-    res.setHeader('Content-Type', response.headers.get('content-type') || 'image/png');
+    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+    const contentLength = Number(response.headers.get('content-length') || 0);
+    if (!contentType.startsWith('image/')) return res.status(415).send('URL did not return an image');
+    if (contentLength > MAX_PROXY_IMAGE_BYTES) return res.status(413).send('Image is too large');
+    const buffer = await readProxyImageBody(response);
+    res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.send(Buffer.from(buffer));
   } catch (e) {
@@ -5458,6 +5545,9 @@ app.get('/api/proxy-image', async (req, res) => {
 });
 
 app.get('/api/payment-methods', async (_req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   try {
     const [[setting]] = await pool.execute(`SELECT value_json FROM site_settings WHERE setting_key='payment_methods_config' LIMIT 1`);
     let methods = FALLBACK_PAYMENT_METHODS;
@@ -5475,6 +5565,9 @@ app.get('/api/payment-methods', async (_req, res) => {
 });
 
 app.get('/api/admin/bank/methods', auth, adminOnly, async (_req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   try {
     const [[setting]] = await pool.execute(`SELECT value_json FROM site_settings WHERE setting_key='payment_methods_config' LIMIT 1`);
     let methods = FALLBACK_PAYMENT_METHODS;

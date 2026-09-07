@@ -310,7 +310,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Personal Wallet & Commission Wallet Overview (Dark Theme Matched, Buttons Removed) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', margin: '18px 0 22px' }}>
+        <div className="settings-wallets-grid">
           {/* 1. Personal Wallet Card */}
           <div
             style={{

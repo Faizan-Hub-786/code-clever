@@ -243,7 +243,8 @@ export default function PlansPage() {
                 </th>
                 <th>
                   <div className="th-icon-wrap"><Wallet size={18} /></div>
-                  Job Bond (PKR)
+                  <span className="th-mobile-short">Bond</span>
+                  <span className="th-desktop-full">Job Bond (PKR)</span>
                 </th>
                 <th>
                   <div className="th-icon-wrap"><ClipboardList size={18} /></div>
@@ -251,19 +252,23 @@ export default function PlansPage() {
                 </th>
                 <th>
                   <div className="th-icon-wrap"><Tag size={18} /></div>
-                  Unit Price (PKR)
+                  <span className="th-mobile-short">Unit</span>
+                  <span className="th-desktop-full">Unit Price (PKR)</span>
                 </th>
                 <th>
                   <div className="th-icon-wrap"><TrendingUp size={18} /></div>
-                  Daily Income (PKR)
+                  <span className="th-mobile-short">Daily</span>
+                  <span className="th-desktop-full">Daily Income (PKR)</span>
                 </th>
                 <th>
                   <div className="th-icon-wrap"><CalendarDays size={18} /></div>
-                  Monthly Income (PKR)
+                  <span className="th-mobile-short">Monthly</span>
+                  <span className="th-desktop-full">Monthly Income (PKR)</span>
                 </th>
                 <th>
                   <div className="th-icon-wrap"><BarChart3 size={18} /></div>
-                  Annual Income (PKR)
+                  <span className="th-mobile-short">Annual</span>
+                  <span className="th-desktop-full">Annual Income (PKR)</span>
                 </th>
               </tr>
             </thead>
@@ -314,7 +319,8 @@ export default function PlansPage() {
                 </th>
                 <th>
                   <div className="th-icon-wrap"><Wallet size={18} /></div>
-                  Job Bond
+                  <span className="th-mobile-short">Bond</span>
+                  <span className="th-desktop-full">Job Bond</span>
                 </th>
                 <th>
                   <div className="th-icon-wrap"><PieChart size={18} /></div>

@@ -102,6 +102,7 @@ export default function AdminBank() {
       if (!res.ok) throw new Error(data.message || 'Failed to save bank settings');
       setMsg(data.message || `${method.name} saved successfully.`);
       loadMethods();
+      window.dispatchEvent(new CustomEvent('cc_bank_updated'));
     } catch (err) {
       setError(err.message);
     } finally {
